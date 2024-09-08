@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <style>
+        .success-info {
+            background-color: #e8f5e9;
+            border: 1px solid #4caf50;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .success-info h2 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/header') %>
+    <main>
+        <h1>Potje starten</h1>
+        <% if (locals.error) { %>
+            <p class="error"><%= error %></p>
+        <% } %>
+        <% if (locals.success) { %>
+            <div class="success">
+                <p><%= success %></p>
+                <% if (locals.roomIdentifier && locals.pinCode) { %>
+                    <div class="success-info">
+                        <h2>Klas aangemaakt</h2>
+                        <p><strong>Klas ID:</strong> <%= roomIdentifier %></p>
+                        <p><strong>PIN:</strong> <%= pinCode %></p>
+                        <p>Bewaar deze informatie. Je hebt het nodig om in te loggen</p>
+                        <a href="/auth/teacher-login?roomId=<%= roomIdentifier %>&pinCode=<%= pinCode %>" class="btn btn-primary">Login Now</a>
+                    </div>
+                <% } %>
+            </div>
+        <% } else { %>
+            <form action="/auth/register" method="POST">
+                <div>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <button type="submit">Start een potje</button>
+            </form>
+        <% } %>
+    </main>
+    <%- include('partials/footer') %>
+</body>
+</html>

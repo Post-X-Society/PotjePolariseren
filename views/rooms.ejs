@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+</head>
+<body>
+    <%- include('partials/header') %>
+    <main>
+        <h1><%= title %></h1>
+        <a href="/rooms/create">Create New Room</a>
+        <ul>
+            <% rooms.forEach(function(room) { %>
+                <li>
+                    <a href="/rooms/<%= room.uniqueIdentifier %>">
+                        Room <%= room.uniqueIdentifier %> (Created: <%= room.createdAt.toLocaleDateString() %>)
+                    </a>
+                </li>
+            <% }); %>
+        </ul>
+    </main>
+    <%- include('partials/footer') %>
+</body>
+</html>

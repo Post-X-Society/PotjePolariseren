@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+</head>
+<body>
+    <%- include('partials/header') %>
+    <main>
+        <h1>Login</h1>
+        <% if (locals.error) { %>
+            <p class="error"><%= error %></p>
+        <% } %>
+        <form action="/auth/login" method="POST">
+            <div>
+                <label for="roomId">Room Identifier:</label>
+                <input type="text" id="roomId" name="roomId" required>
+            </div>
+            <div>
+                <label for="pinCode">PIN:</label>
+                <input type="password" id="pinCode" name="pinCode" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </main>
+    <%- include('partials/footer') %>
+</body>
+</html>

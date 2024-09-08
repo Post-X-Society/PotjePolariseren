@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+    <style>
+        .video-item {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .video-preview {
+            width: 150px;
+            height: auto;
+        }
+        .editable:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+        .truncate {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .processing-message {
+            color: #856404;
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .error-message {
+            color: #721c24;
+            background-color: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+        }
+		.table {
+			background-color: #fff;
+		}
+    </style>
+</head>
+<body>
+    <%- include('partials/header') %>
+    <div class="container mt-4">
+        <h1>Klas ID: <%= room.uniqueIdentifier %></h1>
+        <p>Verloopt op: <%= new Date(room.expiresAt).toLocaleDateString() %></p>
+		
+		<!-- Add upload form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Upload een video</h5>
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="title">Video Titel:</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="video">Video Bestand:</label>
+                        <input type="file" class="form-control-file" id="video" name="video" accept="video/*" required>
+                    </div>
+                    <input type="hidden" name="roomId" value="<%= room.id %>">
+                    <button type="submit" class="btn btn-primary">Upload Video</button>
+                </form>
+                <div class="progress mt-3" id="uploadProgressBar">
+                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Titel</th>
+                    <th>Uploader</th>
+                    <th>Datum</th>
+                    <th>Comment</th>
+                    <th>Transcriptie</th>
+                    <th>Bewerkte Transcriptie</th>
+                    <th>Video</th>
+                    <th>Acties</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% videos.forEach(video => { %>
+                    <tr>
+                        <td>
+                            <span class="editable" data-type="title" data-id="<%= video.id %>"><%= video.title %></span>
+                        </td>
+                        <td>
+                            <% if (video.student) { %>
+                                <%= video.student.email %> (Student)
+                            <% } else if (video.teacher) { %>
+                                <%= video.teacher.email %> (Teacher)
+                            <% } else { %>
+                                Unknown
+                            <% } %>
+                        </td>
+                        <td><%= new Date(video.createdAt).toLocaleString() %></td>
+                        <td>
+                            <span class="editable truncate" data-type="comment" data-id="<%= video.id %>" data-toggle="collapse" data-target="#comment-<%= video.id %>">
+                                <%= video.comment ? video.comment.substring(0, 150) : 'No comment' %>
+                            </span>
+                            <div id="comment-<%= video.id %>" class="collapse mt-2">
+                                <%= video.comment %>
+                            </div>
+                        </td>
+                        <td>
+                            <% if (video.processingStatus === 'completed' && video.transcription) { %>
+                                <span class="truncate" data-toggle="collapse" data-target="#transcription-<%= video.id %>">
+                                    <%= video.transcription.substring(0, 150) %>...
+                                </span>
+                                <div id="transcription-<%= video.id %>" class="collapse mt-2">
+                                    <%= video.transcription %>
+                                </div>
+                            <% } else if (video.processingStatus === 'processing' || video.processingStatus === 'pending_transcription' || video.processingStatus === 'transcribing') { %>
+                                <span class="processing-message">Transcription in progress...</span>
+                            <% } else { %>
+                                <span>No transcription available</span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <span class="editable truncate" data-type="editedTranscription" data-id="<%= video.id %>" data-toggle="collapse" data-target="#edited-transcription-<%= video.id %>">
+                                <%= video.editedTranscription ? video.editedTranscription.substring(0, 150) : 'No edited transcription' %>
+                            </span>
+                            <div id="edited-transcription-<%= video.id %>" class="collapse mt-2">
+                                <%= video.editedTranscription || '' %>
+                            </div>
+                        </td>
+                        <td>
+                            <% if (video.processingStatus === 'completed') { %>
+                                <video class="video-preview" controls>
+                                    <source src="/videos/stream/<%= video.filePath %>" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            <% } else if (video.processingStatus === 'processing' || video.processingStatus === 'pending_transcription' || video.processingStatus === 'transcribing' || video.processingStatus == '') { %>
+                                <div class="processing-message">
+                                    Video is being processed...
+                                </div>
+                            <% } else { %>
+                                <div class="error-message">
+                                    Error processing video
+                                </div>
+                            <% } %>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger btn-sm delete-video" data-id="<%= video.id %>">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                            <% if (video.processingStatus !== 'completed' && video.processingStatus !== 'processing' && video.processingStatus !== 'transcribing') { %>
+                                <button class="btn btn-primary btn-sm retry-transcription" data-id="<%= video.id %>">
+                                    <i class="fas fa-redo"></i> Retry Transcription
+                                </button>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script>
+    $(document).ready(function() {
+        // Make content editable
+        $('.editable').on('click', function(e) {
+            e.stopPropagation();
+            var element = $(this);
+            var type = element.data('type');
+            var id = element.data('id');
+            var currentText = element.text().trim();
+            var input = $('<textarea class="form-control"></textarea>');
+            
+            input.val(currentText);
+            element.hide().after(input);
+            input.focus();
+
+            function saveChanges() {
+                var newText = input.val();
+                if (newText !== currentText) {
+                    $.ajax({
+                        url: `/videos/${id}/${type}`,
+                        method: 'PUT',
+                        data: { [type]: newText },
+                        success: function(response) {
+                            element.text(newText.substring(0, 150));
+                            element.siblings('.collapse').text(newText);
+                        },
+                        error: function() {
+                            alert('Failed to update. Please try again.');
+                        }
+                    });
+                }
+                input.remove();
+                element.show();
+            }
+
+            input.on('blur', saveChanges);
+            input.on('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    saveChanges();
+                }
+            });
+        });
+
+        // Handle video deletion
+        $('.delete-video').on('click', function() {
+            var videoId = $(this).data('id');
+            if (confirm('Are you sure you want to delete this video?')) {
+                $.ajax({
+                    url: `/videos/${videoId}`,
+                    method: 'DELETE',
+                    success: function() {
+                        $(`tr:has(button[data-id="${videoId}"])`).remove();
+                    },
+                    error: function() {
+                        alert('Failed to delete the video. Please try again.');
+                    }
+                });
+            }
+        });
+		
+		// Handle video upload
+        $('#uploadForm').on('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: '/videos/upload',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                xhr: function() {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function(evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            percentComplete = parseInt(percentComplete * 100);
+                            $('#uploadProgressBar').show().find('.progress-bar').width(percentComplete + '%').text(percentComplete + '%');
+                        }
+                    }, false);
+                    return xhr;
+                },
+                success: function(response) {
+                    alert('Video uploaded successfully!');
+                    location.reload(); // Reload the page to show the new video
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred while uploading the video.');
+                    console.error(error);
+                }
+            });
+        });
+
+        // Function to check video processing status
+        function checkVideoStatus(videoId) {
+            $.get('/videos/' + videoId + '/status', function(data) {
+                var videoContainer = $('#video-container-' + videoId);
+                if (data.processingStatus === 'completed') {
+                    videoContainer.html('<video class="video-preview" controls><source src="/videos/stream/' + data.filePath + '" type="video/mp4">Your browser does not support the video tag.</video>');
+                } else if (data.processingStatus === 'failed') {
+                    videoContainer.html('<div class="alert alert-danger">Processing failed. Please try uploading again.</div>');
+                } else {
+                    // If still processing, check again after 5 seconds
+                    setTimeout(function() { checkVideoStatus(videoId); }, 5000);
+                }
+            });
+        }
+
+        // Start checking status for videos that are being processed
+        $('.video-preview[data-status="processing"]').each(function() {
+            var videoId = $(this).data('id');
+            checkVideoStatus(videoId);
+        });
+		
+		// Add functionality for retry transcription
+        $('.retry-transcription').on('click', function() {
+            const videoId = $(this).data('id');
+            if (confirm('Are you sure you want to retry transcription for this video?')) {
+                $.ajax({
+                    url: `/videos/${videoId}/retry-transcription`,
+                    method: 'POST',
+                    success: function(result) {
+                        alert('Transcription process restarted. Please refresh the page in a few moments.');
+                    },
+                    error: function() {
+                        alert('Failed to restart transcription. Please try again.');
+                    }
+                });
+            }
+        });
+    });
+    </script>
+</body>
+</html>

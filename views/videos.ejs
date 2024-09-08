@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+</head>
+<body>
+    <%- include('partials/header') %>
+    <main>
+        <h1>Videos in Room <%= room.uniqueIdentifier %></h1>
+        <% if (videos.length === 0) { %>
+            <p>No videos uploaded yet.</p>
+        <% } else { %>
+            <ul>
+                <% videos.forEach(function(video) { %>
+                    <li>
+                        <h3><%= video.title %></h3>
+                        <p>Uploaded by: <%= video.student.email %></p>
+                        <p>Uploaded at: <%= video.createdAt.toLocaleString() %></p>
+                        <% if (video.transcription) { %>
+                            <p>Transcription: <%= video.transcription %></p>
+                        <% } else { %>
+                            <form action="/videos/<%= video.id %>/transcribe" method="POST">
+                                <button type="submit">Transcribe</button>
+                            </form>
+                        <% } %>
+                        <% if (video.scoreData) { %>
+                            <p>Score: <%= JSON.stringify(video.scoreData) %></p>
+                        <% } else if (video.transcription) { %>
+                            <form action="/videos/<%= video.id %>/score" method="POST">
+                                <button type="submit">Score</button>
+                            </form>
+                        <% } %>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } %>
+    </main>
+    <%- include('partials/footer') %>
+</body>
+</html>

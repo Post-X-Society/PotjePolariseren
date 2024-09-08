@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+</head>
+<body>
+    <%- include('partials/header') %>
+    <main>
+        <h1><%= title %></h1>
+        <p>Room Identifier: <%= room.uniqueIdentifier %></p>
+        <p>Pin Code: <%= room.pinCode %></p>
+        <p>Created: <%= room.createdAt.toLocaleDateString() %></p>
+        <p>Expires: <%= room.expiresAt.toLocaleDateString() %></p>
+        <h2>Videos</h2>
+        <!-- Add video list here when implemented -->
+    </main>
+    <%- include('partials/footer') %>
+</body>
+</html>

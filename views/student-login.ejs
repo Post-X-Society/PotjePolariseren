@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+</head>
+<body>
+    <%- include('partials/header') %>
+    <main>
+        <h1>Student Login</h1>
+        <% if (locals.error) { %>
+            <p class="error"><%= error %></p>
+        <% } %>
+        <% if (locals.success) { %>
+            <p class="success"><%= success %></p>
+        <% } else { %>
+            <form action="/auth/student-login" method="POST">
+                <div>
+                    <label for="roomId">Klas ID:</label>
+                    <input type="text" id="roomId" name="roomId" required>
+                </div>
+                <div>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <button type="submit">Verstuur Login Link</button>
+            </form>
+        <% } %>
+    </main>
+    <%- include('partials/footer') %>
+</body>
+</html>
