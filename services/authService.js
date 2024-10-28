@@ -13,7 +13,7 @@ class AuthService {
   async registerTeacher(email) {
     const existingUser = await this.User.findOne({ where: { email } });
     if (existingUser) {
-      throw new Error('Email already registered');
+      throw new Error('Emailadres al in gebruik');
     }
 
     const user = await this.User.create({
@@ -33,11 +33,11 @@ class AuthService {
     try {
       await emailService.sendRegistrationEmail(email, roomIdentifier, pinCode);
     } catch (error) {
-      console.error('Failed to send registration email:', error);
+      console.error('Versturen van gegevens mislukt:', error);
       // Depending on your requirements, you might want to delete the created user and room here
       // await user.destroy();
       // await room.destroy();
-      throw new Error('Registration successful, but failed to send email. Please contact support.');
+      throw new Error('Potje is aangemaakt, maar mail is niet verstuurd.');
     }
 
     return { user, room };
@@ -50,7 +50,7 @@ class AuthService {
     });
 
     if (!room || room.pinCode !== pinCode) {
-      throw new Error('Invalid room identifier or PIN');
+      throw new Error('Onjuist Potje ID of PIN');
     }
 
     const token = jwt.sign({ id: room.teacher.id, role: 'teacher', roomId: room.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
@@ -65,7 +65,7 @@ class AuthService {
     try {
       const room = await this.Room.findOne({ where: { uniqueIdentifier: roomId } });
       if (!room) {
-        throw new Error('Invalid room identifier');
+        throw new Error('Onjuist Pojte ID');
       }
 
       let student = await this.User.findOne({ where: { email, role: 'student' } });
@@ -78,7 +78,7 @@ class AuthService {
 
       await emailService.sendStudentAccessLink(email, accessLink);
 
-      return { message: 'Access link sent to email' };
+      return { message: 'Link is verstuurd per mail' };
     } catch (error) {
       console.error('Error in requestStudentLink:', error);
       if (error.name === 'SequelizeValidationError') {

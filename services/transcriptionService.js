@@ -5,6 +5,7 @@ const fs = require('fs').promises;
 const Replicate = require('replicate');
 const { models } = require('../database');
 const Queue = require('bull');
+const { addScoringJob } = require('./scoringQueue');
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -58,7 +59,7 @@ class TranscriptionService {
           throw new Error('Video not found');
         }
 
-        await models.Video.update({ processingStatus: 'transcribing' }, { where: { id: videoId } });
+        await models.Video.update({ processingStatus: 'processing' }, { where: { id: videoId } });
 
         const videoPath = path.join(__dirname, '..', 'uploads', video.filePath);
         const audioPath = await TranscriptionService.extractAudio(videoPath);
@@ -67,13 +68,18 @@ class TranscriptionService {
 
         await video.update({ 
           transcription, 
-          processingStatus: 'completed'
+          processingStatus: 'completed',
+          scoringStatus: 'pending'  // Set initial scoring status
         });
 
         // Clean up the temporary audio file
         await fs.unlink(audioPath);
 
         console.log(`Transcription completed for video ${videoId}`);
+
+        // Queue the video for scoring using the new addScoringJob function
+        await addScoringJob(videoId);
+
         return transcription;
       } catch (error) {
         console.error(`Error in transcription process for video ${videoId}, attempt ${retries + 1}:`, error);

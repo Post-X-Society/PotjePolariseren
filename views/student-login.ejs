@@ -2,30 +2,207 @@
 <html lang="en">
 <head>
     <%- include('partials/head') %>
+    <style>
+        a:hover {
+            color: #EE72F8;
+        }
+            
+        .centered-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 56px); /* Adjust for navbar height */
+            text-align: center; /* Center text content */
+            padding: 15px; /* Add padding to avoid overflow */
+            flex-direction: column; /* Stack elements vertically */
+        }
+        
+        @media (min-width: 992px) {
+            .centered-content {
+                max-width: 50%;
+                margin: 0 auto; /* Center the content horizontally */
+            }
+        }
+        
+        .text-row {
+            background-color: white;
+            color: black;
+            padding: 15px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-shadow: 3px 3px 0 3px #EE72F8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s, box-shadow 0.3s; /* Smooth transition for hover effect */
+        }
+        .text-row:hover {
+            box-shadow: 3px 3px 0px 3px green; /* Changes shadow color to green */
+        }
+        .row-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none; /* Removes underline from links */
+            color: inherit; /* Inherits text color */
+            width: 100%;
+        }
+        .row-content:hover {
+            text-decoration: none;
+        }
+        
+        #row1 {
+            background-color: black;
+            text-transform: uppercase;
+            opacity: 0.9;
+            color: white;
+            box-shadow: 0 0 0 0;
+        }
+        
+        #row1:hover {
+            transform: none;
+        }
+        
+        #row2 {
+            box-shadow: 0 0 0 0;
+        }
+        
+        #row2:hover {
+            transform: none;
+        }
+        
+        #row3 {
+            text-align: left;
+        }
+        
+        .form-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            width: 100px;
+            text-align: right;
+            padding-right: 1rem;
+        }
+        .form-input {
+            flex-grow: 1;
+        }
+        .potje-id-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .potje-id-input {
+            width: 2rem;
+            height: 2rem;
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 0 0.25rem;
+            border: 2px solid #ccc;
+            border-radius: 0.5rem;
+        }
+        .potje-id-dash {
+            font-size: 1.2rem;
+            margin: 0 0.5rem;
+            align-self: center;
+        }
+    </style>
 </head>
 <body>
     <%- include('partials/header') %>
     <main>
-        <h1>Student Login</h1>
-        <% if (locals.error) { %>
-            <p class="error"><%= error %></p>
-        <% } %>
-        <% if (locals.success) { %>
-            <p class="success"><%= success %></p>
-        <% } else { %>
-            <form action="/auth/student-login" method="POST">
-                <div>
-                    <label for="roomId">Klas ID:</label>
-                    <input type="text" id="roomId" name="roomId" required>
+        <!-- Centered Content -->
+        <div class="centered-content">
+            <div class="text-row" id="row1">
+                <p class="h3">Student Login</p>
+            </div>
+            <% if (locals.error) { %>
+                <div class="alert alert-danger" role="alert"><%= error %></div>
+            <% } %>
+            <% if (locals.success) { %>
+                <div class="alert alert-success" role="alert"><%= success %></div>
+            <% } else { %>
+                <div class="text-row" id="row3">
+                    <form action="/auth/student-login" method="POST" id="loginForm">
+                        <div class="form-row">
+                            <label for="potjeId" class="form-label">Potje ID:</label>
+                            <div class="form-input">
+                                <div class="potje-id-container">
+                                    <input type="text" class="potje-id-input" maxlength="1" required>
+                                    <input type="text" class="potje-id-input" maxlength="1" required>
+                                    <input type="text" class="potje-id-input" maxlength="1" required>
+                                    <input type="text" class="potje-id-input" maxlength="1" required>
+                                    <span class="potje-id-dash">-</span>
+                                    <input type="text" class="potje-id-input" maxlength="1" required>
+                                    <input type="text" class="potje-id-input" maxlength="1" required>
+                                    <input type="text" class="potje-id-input" maxlength="1" required>
+                                    <input type="text" class="potje-id-input" maxlength="1" required>
+                                </div>
+                                <input type="hidden" id="roomId" name="roomId" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label for="email" class="form-label">Email:</label>
+                            <div class="form-input">
+                                <input type="email" id="email" name="email" required class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-label"></div>
+                            <div class="form-input">
+                                <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">Verstuur Login Link &#x2192;</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-                <div>
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                <button type="submit">Verstuur Login Link</button>
-            </form>
-        <% } %>
+            <% } %>
+        </div>
     </main>
     <%- include('partials/footer') %>
+
+    <script>
+        $(document).ready(function() {
+            // Potje ID input handling
+            $('.potje-id-container').on('input', '.potje-id-input', function() {
+                this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                if (this.value.length === this.maxLength) {
+                    let nextInput = $(this).next('.potje-id-input');
+                    if (nextInput.length === 0) {
+                        nextInput = $(this).next('.potje-id-dash').next('.potje-id-input');
+                    }
+                    if (nextInput.length > 0) {
+                        nextInput.focus();
+                    }
+                }
+            });
+
+            // Handle backspace
+            $('.potje-id-container').on('keydown', 'input', function(e) {
+                if (e.which === 8 && this.value.length === 0) {
+                    let prevInput = $(this).prev('.potje-id-input');
+                    if (prevInput.length === 0) {
+                        prevInput = $(this).prev('.potje-id-dash').prev('.potje-id-input');
+                    }
+                    if (prevInput.length > 0) {
+                        prevInput.focus();
+                    }
+                }
+            });
+
+            // Form submission
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                var potjeId = $('.potje-id-input').map(function() {return this.value;}).get().join('');
+                $('#roomId').val(potjeId);
+                
+                if (potjeId.length === 8) {
+                    this.submit();
+                } else {
+                    alert('Vul een juist Potje ID in.');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

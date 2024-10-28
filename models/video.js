@@ -14,6 +14,10 @@ module.exports = (sequelize) => {
       type: DataTypes.ENUM('pending', 'processing', 'completed', 'failed'),
       defaultValue: 'pending'
     },
+	scoringStatus: {
+      type: DataTypes.ENUM('pending', 'processing', 'completed', 'failed'),
+      defaultValue: 'pending'
+    },
     comment: {
       type: DataTypes.TEXT,
       allowNull: true

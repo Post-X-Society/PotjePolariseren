@@ -2,49 +2,314 @@
 <html lang="en">
 <head>
     <%- include('partials/head') %>
-    <style>
-        .success-info {
-            background-color: #e8f5e9;
-            border: 1px solid #4caf50;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 5px;
-        }
-        .success-info h2 {
-            color: #2e7d32;
-            margin-top: 0;
-        }
+<style>
+/* Base styles */
+:root {
+    --primary-color: #0d6efd;
+    --error-color: #dc3545;
+    --success-color: #2e7d32;
+    --text-color: #212529;
+    --background-color: #ffffff;
+    --accent-color: #EE72F8;
+}
+
+a:hover {
+    color: var(--accent-color);
+}
+
+/* Utility classes */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Layout */
+.centered-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 56px);
+    text-align: center;
+    padding: 15px;
+    flex-direction: column;
+}
+
+/* Text rows */
+.text-row {
+    background-color: white;
+    color: black;
+    padding: 15px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-shadow: 3px 3px 0 3px var(--accent-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.text-row:hover {
+    box-shadow: 3px 3px 0px 3px green;
+}
+
+/* Specific rows */
+#row1 {
+    background-color: black;
+    text-transform: uppercase;
+    opacity: 0.9;
+    color: white;
+    box-shadow: 0 0 0 0;
+}
+
+#row1:hover {
+    transform: none;
+}
+
+#row2 {
+    box-shadow: 0 0 0 0;
+}
+
+#row2:hover {
+    transform: none;
+}
+
+#row4 {
+    background-color: grey;
+    opacity: 0.9;
+    color: white;
+    box-shadow: 0 0 0 0;
+}
+
+/* Navigation elements */
+.arrow-button {
+    border: none;
+    background: none;
+    color: black;
+    cursor: pointer;
+    font-size: 1.5em;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+.row-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+}
+
+.row-content:hover {
+    text-decoration: none;
+}
+
+/* Form styles */
+.form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    width: 100px;
+    text-align: right;
+    padding-right: 1rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.form-input {
+    flex-grow: 1;
+}
+
+.form-control {
+    padding: 0.5rem;
+    border: 2px solid #666;
+    border-radius: 4px;
+    font-size: 1rem;
+    line-height: 1.5;
+    width: 100%;
+}
+
+/* Alert and success messages */
+.alert {
+    border: 2px solid var(--error-color);
+    background-color: #fff;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+}
+
+.success-info {
+    background-color: #e8f5e9;
+    border: 2px solid var(--success-color);
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+.success-info h2 {
+    color: var(--success-color);
+    margin-top: 0;
+}
+
+/* Focus states */
+.form-control:focus,
+a:focus,
+button:focus,
+input:focus {
+    outline: 3px solid #4A90E2;
+    outline-offset: 2px;
+    border-color: #4A90E2;
+}
+
+/* Link styles */
+a {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+a:hover,
+a:focus {
+    color: #003d82;
+    text-decoration: underline;
+}
+
+/* Desktop styles */
+@media (min-width: 992px) {
+    .centered-content {
+        max-width: 50%;
+        margin: 0 auto;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .text-row {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .h2, .h3, .h4 {
+        font-size: 1.2rem;
+    }
+
+    .form-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .form-label {
+        width: 100%;
+        text-align: left;
+        padding-right: 0;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+    
+    .form-input {
+        width: 100%;
+    }
+
+    .btn, 
+    .form-control,
+    .arrow-button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .text-row {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    .arrow-button {
+        display: none;
+    }
+}
     </style>
 </head>
 <body>
     <%- include('partials/header') %>
-    <main>
-        <h1>Potje starten</h1>
-        <% if (locals.error) { %>
-            <p class="error"><%= error %></p>
-        <% } %>
-        <% if (locals.success) { %>
-            <div class="success">
-                <p><%= success %></p>
-                <% if (locals.roomIdentifier && locals.pinCode) { %>
-                    <div class="success-info">
-                        <h2>Klas aangemaakt</h2>
-                        <p><strong>Klas ID:</strong> <%= roomIdentifier %></p>
-                        <p><strong>PIN:</strong> <%= pinCode %></p>
-                        <p>Bewaar deze informatie. Je hebt het nodig om in te loggen</p>
-                        <a href="/auth/teacher-login?roomId=<%= roomIdentifier %>&pinCode=<%= pinCode %>" class="btn btn-primary">Login Now</a>
-                    </div>
-                <% } %>
-            </div>
-        <% } else { %>
-            <form action="/auth/register" method="POST">
-                <div>
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                <button type="submit">Start een potje</button>
-            </form>
-        <% } %>
+	<main>
+		<!-- Centered Content -->
+		<div class="centered-content">
+			<div class="text-row" id="row1">
+				<p class="h3">Potje starten</p>
+			</div>
+			<% if (locals.error) { %>
+           	<div class="alert alert-danger" role="alert"><%= error %></div>
+        	<% } %>
+			<div class="text-row" id="row3">
+				<% if (locals.success) { %>
+					<div class="success">
+						<p><%= success %></p>
+						<% if (locals.roomIdentifier && locals.pinCode) { %>
+							<div class="success-info">
+								<h2>Klas aangemaakt</h2>
+								<p><strong>Potje ID:</strong> <%= roomIdentifier.slice(0, 4).toUpperCase() %>-<%= roomIdentifier.slice(4).toUpperCase() %></p>
+								<p><strong>PIN:</strong> <%= pinCode %></p>
+								<p>Deze info is je per mail toegestuurd, klik op "Nu Inloggen" om door te gaan</p>
+								<a href="/auth/teacher-login?roomId=<%= roomIdentifier %>&pinCode=<%= pinCode %>" class="btn btn-primary">Nu Inloggen</a>
+							</div>
+						<% } %>
+					</div>
+				<% } else { %>
+					<!-- Updated form section with WCAG improvements -->
+					<form action="/auth/register" method="POST" style="text-align:left;" novalidate>
+						<div class="form-row">
+							<!-- Adding proper heading structure -->
+							<h2 class="visually-hidden">Aanmeldformulier</h2>
+							<p>Studenten, gebruik de <a href="/auth/student-login" aria-label="Ga naar studenten login pagina">studenten login</a> om mee te doen</p>
+							<p>Docenten, meld je via onderstaand formulier aan en ga direct aan de slag.</p>
+						</div>
+						<div class="form-row">
+							<label for="email" class="form-label">Email:</label>
+							<div class="form-input">
+								<input 
+									type="email" 
+									id="email" 
+									name="email" 
+									required 
+									class="form-control"
+									aria-required="true"
+									aria-describedby="email-hint"
+								>
+								<span id="email-hint" class="visually-hidden">Vul je email adres in</span>
+							</div>                           
+						</div>
+						<div class="form-row">
+							<div class="form-label"></div>
+							<div class="form-input">
+								<button 
+									type="submit" 
+									class="btn btn-primary btn-lg px-4 gap-3"
+									aria-label="Start een potje"
+								>
+									Start een potje 
+									<span aria-hidden="true">&#x2192;</span>
+								</button>
+							</div>
+						</div>
+					</form>
+				<% } %>
+			</div>
+		</div>
     </main>
     <%- include('partials/footer') %>
 </body>

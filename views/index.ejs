@@ -3,123 +3,267 @@
 <head>
     <%- include('partials/head') %>
 	<style>
-		a:hover {
-			color: #EE72F8;
+		/* Root variables for consistent theming */
+		:root {
+			--primary-text: #000000;
+			--white-text: #ffffff;
+			--accent-color: #EE72F8;
+			--hover-green: #2e7d32;
+			--focus-blue: #4A90E2;
+			--background-white: #ffffff;
+			--grey-bg: rgba(128, 128, 128, 0.9);
+			--black-bg: rgba(0, 0, 0, 0.9);
 		}
-			
-        .centered-content {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: calc(100vh - 56px); /* Adjust for navbar height */
-            text-align: center; /* Center text content */
-            padding: 15px; /* Add padding to avoid overflow */
-            flex-direction: column; /* Stack elements vertically */
-        }
-		
-		@media (min-width: 992px) {
-            .centered-content {
-                max-width: 50%;
-                margin: 0 auto; /* Center the content horizontally */
-            }
-        }
-		
-        .text-row {
-            background-color: white;
-            color: black;
-            padding: 15px;
-            margin-bottom: 10px;
-            width: 100%;
-            box-shadow: 3px 3px 0 3px #EE72F8;
-            text-transform: uppercase; /* All caps for all rows */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.3s, box-shadow 0.3s; /* Smooth transition for hover effect */
-        }
-        .text-row:hover {
-            transform: translateY(-5px); /* Moves the row up */
-            box-shadow: 3px 3px 0px 3px green; /* Changes shadow color to green */
-        }
-        .arrow-button {
-            border: none;
-            background: none;
-            color: black; /* Black arrows */
-            cursor: pointer;
-            font-size: 1.5em;
-        }
-        .row-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            text-decoration: none; /* Removes underline from links */
-            color: inherit; /* Inherits text color */
-            width: 100%;
-        }
-        .row-content:hover {
-            text-decoration: none;
-        }
-		
-        #row1 {
-            background-color: black;
-            opacity: 0.9;
-            color: white;
+
+		/* Base styles */
+		html {
+			font-size: 16px;
+		}
+
+		body {
+			line-height: 1.5;
+		}
+
+		/* Accessibility utilities */
+		.visually-hidden {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
+
+		.visually-hidden-focusable:focus {
+			clip: auto;
+			height: auto;
+			margin: 0;
+			overflow: visible;
+			position: static;
+			width: auto;
+			white-space: normal;
+		}
+
+		.skip-link {
+			position: absolute;
+			top: -40px;
+			left: 0;
+			background: var(--background-white);
+			padding: 8px;
+			z-index: 100;
+		}
+
+		.skip-link:focus {
+			top: 0;
+		}
+
+		/* Layout */
+		.centered-content {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: calc(100vh - 56px);
+			text-align: center;
+			padding: 15px;
+			flex-direction: column;
+		}
+
+		/* Row styles */
+		.text-row {
+			background-color: var(--background-white);
+			color: var(--primary-text);
+			padding: 15px;
+			margin-bottom: 10px;
+			width: 100%;
+			box-shadow: 3px 3px 0 3px var(--accent-color);
+			text-transform: uppercase;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			transition: transform 0.3s, box-shadow 0.3s;
+			line-height: 1.5;
+		}
+
+		.text-row:hover {
+			transform: translateY(-5px);
+			box-shadow: 3px 3px 0px 3px var(--hover-green);
+		}
+
+		/* Specific rows */
+		#row1 {
+			background-color: var(--black-bg);
+			color: var(--white-text);
 			box-shadow: 0 0 0 0;
-        }
-		
+		}
+
 		#row1:hover {
 			transform: none;
 		}
-		
+
 		#row2 {
 			box-shadow: 0 0 0 0;
 		}
-		
+
 		#row2:hover {
 			transform: none;
 		}
-		
+
+		#row2 h2 {
+			font-size: 5rem;
+			margin: 0;
+		}
+
 		#row4 {
-            background-color: grey;
-            opacity: 0.9;
-            color: white;
+			background-color: var(--grey-bg);
+			color: var(--white-text);
 			box-shadow: 0 0 0 0;
-        }
-		
-        /* Media query for mobile devices */
-        @media (max-width: 768px) {
-            .text-row {
-                flex-direction: column; /* Stack content vertically */
-                text-align: center; /* Center text content */
-            }
-            h1 {
-                font-size: 2rem;
-            }
-            .h2, .h3, .h4 {
-                font-size: 1.2rem;
-            }
-        }
+		}
+
+		/* Interactive elements */
+		.arrow-button {
+			border: none;
+			background: none;
+			color: currentColor;
+			cursor: pointer;
+			font-size: 1.5em;
+			min-height: 44px;
+			min-width: 44px;
+			padding: 8px;
+		}
+
+		.row-content {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			text-decoration: none;
+			color: inherit;
+			width: 100%;
+		}
+
+		/* Link styles */
+		a {
+			color: inherit;
+			text-decoration: none;
+		}
+
+		a:hover {
+			color: var(--accent-color);
+			text-decoration: none;
+		}
+
+		/* Focus styles */
+		a:focus,
+		.row-content:focus,
+		.arrow-button:focus {
+			outline: 3px solid var(--focus-blue);
+			outline-offset: 2px;
+		}
+
+		/* Desktop styles */
+		@media (min-width: 992px) {
+			.centered-content {
+				max-width: 50%;
+				margin: 0 auto;
+			}
+		}
+
+		/* Tablet and mobile styles */
+		@media (max-width: 768px) {
+			html {
+				font-size: 14px;
+			}
+
+			.text-row {
+				flex-direction: column;
+				text-align: center;
+			}
+
+			#row2 h2 {
+				font-size: 3rem;
+			}
+
+			.h2, .h3, .h4 {
+				font-size: 1.2rem;
+			}
+		}
+
+		/* Small mobile styles */
+		@media (max-width: 480px) {
+			#row2 h2 {
+				font-size: 2rem;
+			}
+		}
+
+		/* Reduced motion preferences */
+		@media (prefers-reduced-motion: reduce) {
+			.text-row {
+				transition: none;
+			}
+
+			.text-row:hover {
+				transform: none;
+			}
+		}
+
+		/* High contrast mode support */
+		@media (forced-colors: active) {
+			.text-row {
+				border: 2px solid currentColor;
+				box-shadow: none;
+			}
+
+			.arrow-button {
+				border: 1px solid currentColor;
+			}
+		}
+
+		/* Print styles */
+		@media print {
+			.text-row {
+				box-shadow: none;
+				border: 1px solid var(--primary-text);
+				break-inside: avoid;
+			}
+
+			.arrow-button {
+				display: none;
+			}
+
+			a[href]::after {
+				content: " (" attr(href) ")";
+			}
+		}
     </style>
 </head>
 <body>
+	<a href="#main-content" class="skip-link visually-hidden visually-hidden-focusable">
+        Skip to main content
+    </a>
     <%- include('partials/header') %>
     <main>
+		 <h1 class="visually-hidden">Potje Polariseren - MBO Burgerschapsonderwijs</h1>
 		<!-- Centered Content -->
-		<div class="centered-content">
-			<div class="text-row" id="row1">
-				<p class="h3">Lespakket over polarisatie voor MBO Burgerschapsonderwijs</p>
+		<div class="centered-content" role="region" aria-label="Hoofdcontent">
+			<div class="text-row" id="row1" role="banner">
+				<h2 class="h3">Lespakket over polarisatie voor MBO Burgerschapsonderwijs</h2>
 			</div>
 			<div class="text-row" id="row2">
-				<h1  style="font-size: 5rem">Potje Polariseren</h1>
+				<h2>Potje Polariseren</h2>
 			</div>
 			<div class="text-row" id="row3">
-				<a href="/auth/register" class="row-content">
-					<p class="h2">Begin een Potje</p>
-					<button class="arrow-button">&#x2192;</button>
+				<a href="/auth/register" class="row-content" aria-label="Begin een nieuw potje polariseren">
+					<span class="h2">Begin een Potje</span>
+					<span class="arrow-button" aria-hidden="true">&#x2192;</span>
 				</a>
 			</div>
 			<div class="text-row mt-5" id="row4">
-				<a href="/over" class="row-content"><p class="h4">Meer informatie</p><button class="arrow-button">&#x2192;</button></a>
+				<a href="/over" class="row-content" aria-label="Lees meer informatie over Potje Polariseren">
+					<span class="h4">Meer informatie</span>
+					<span class="arrow-button" aria-hidden="true">&#x2192;</span>
+				</a>
 			</div>
 		</div>
     </main>

@@ -2,26 +2,502 @@
 <html lang="en">
 <head>
     <%- include('partials/head') %>
+	<style>
+:root {
+    --primary-text: #000000;
+    --white-text: #ffffff;
+    --accent-color: #EE72F8;
+    --hover-green: #2e7d32;
+    --focus-blue: #4A90E2;
+    --error-red: #dc3545;
+    --success-green: #4caf50;
+    --background-white: #ffffff;
+    --grey-bg: rgba(128, 128, 128, 0.9);
+    --black-bg: rgba(0, 0, 0, 0.9);
+    --border-color: #ccc;
+}
+
+/* Original styles */
+a:hover {
+    color: var(--accent-color);
+}
+        
+.centered-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 56px);
+    text-align: center;
+    padding: 15px;
+    flex-direction: column;
+}
+
+@media (min-width: 992px) {
+    .centered-content {
+        max-width: 50%;
+        margin: 0 auto;
+    }
+}
+
+.text-row {
+    background-color: white;
+    color: black;
+    padding: 15px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-shadow: 3px 3px 0 3px var(--accent-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.text-row:hover {
+    box-shadow: 3px 3px 0px 3px var(--hover-green);
+}
+
+.arrow-button {
+    border: none;
+    background: none;
+    color: black;
+    cursor: pointer;
+    font-size: 1.5em;
+    min-height: 44px; /* Accessibility improvement */
+    min-width: 44px; /* Accessibility improvement */
+}
+
+.row-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+}
+
+.row-content:hover {
+    text-decoration: none;
+}
+
+#row1 {
+    background-color: black;
+    text-transform: uppercase;
+    opacity: 0.9;
+    color: white;
+    box-shadow: 0 0 0 0;
+}
+
+#row1:hover {
+    transform: none;
+}
+
+#row2 {
+    box-shadow: 0 0 0 0;
+}
+
+#row2:hover {
+    transform: none;
+}
+
+#row3 {
+    text-align: left;
+}
+
+#row4 {
+    background-color: grey;
+    opacity: 0.9;
+    color: white;
+    box-shadow: 0 0 0 0;
+}
+
+/* Form specific styles - improved for accessibility and mobile */
+.form-group {
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    text-align: left;
+    color: var(--primary-text);
+}
+
+.potje-id-container, .pin-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    max-width: 100%;
+}
+
+.potje-id-input, .pin-input {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    background-color: var(--background-white);
+}
+
+.potje-id-input:focus, .pin-input:focus {
+    outline: 3px solid var(--focus-blue);
+    outline-offset: 2px;
+    border-color: var(--focus-blue);
+}
+
+.potje-id-dash {
+    font-size: 1.5rem;
+    margin: 0 0.25rem;
+    align-self: center;
+}
+
+/* Success info styles */
+.success-info {
+    background-color: #e8f5e9;
+    border: 1px solid var(--success-green);
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+.success-info h2 {
+    color: var(--hover-green);
+    margin-top: 0;
+}
+
+/* Alert styles */
+.alert {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0.25rem;
+    width: 100%;
+}
+
+.alert-danger {
+    background-color: #fbe9e7;
+    border: 1px solid var(--error-red);
+    color: var(--error-red);
+}
+
+/* Button improvements */
+.btn-primary {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem 1rem;
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+    .text-row {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .h2, .h3, .h4 {
+        font-size: 1.2rem;
+    }
+
+    .potje-id-input, .pin-input {
+        width: 2rem;
+        height: 2rem;
+        font-size: 1.25rem;
+    }
+
+    .potje-id-dash {
+        font-size: 1.25rem;
+    }
+    
+    .form-label {
+        font-size: 1rem;
+    }
+
+    /* Ensure form fits in mobile view */
+    .potje-id-container, .pin-container {
+        justify-content: center;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .text-row {
+        transition: none;
+    }
+    
+    .text-row:hover {
+        transform: none;
+    }
+}
+
+/* High contrast mode support */
+@media (forced-colors: active) {
+    .text-row {
+        border: 2px solid currentColor;
+    }
+    
+    .potje-id-input, .pin-input {
+        border: 2px solid currentColor;
+    }
+}
+    </style>
 </head>
 <body>
     <%- include('partials/header') %>
     <main>
-        <h1>Potje Beheren</h1>
-        <% if (locals.error) { %>
-            <p class="error"><%= error %></p>
-        <% } %>
-        <form action="/auth/teacher-login" method="POST">
-            <div>
-                <label for="roomId">Klas ID:</label>
-                <input type="text" id="roomId" name="roomId" value="<%= locals.roomId || '' %>" required>
+        <div class="centered-content">
+            <div class="text-row" id="row1">
+                <p class="h3">Potje bekijken</p>
             </div>
-            <div>
-                <label for="pinCode">PIN:</label>
-                <input type="password" id="pinCode" name="pinCode" value="<%= locals.pinCode || '' %>" required>
+            <% if (locals.error) { %>
+                <div class="alert alert-danger" role="alert"><%= error %></div>
+            <% } %>
+			<div class="text-row" id="row3">
+    <form action="/auth/teacher-login" method="POST" id="loginForm" autocomplete="off">
+        <div class="form-group" role="group" aria-labelledby="potjeId-label">
+            <label id="potjeId-label" for="potjeId-1" class="form-label">Potje ID (8 tekens):</label>
+            <div class="potje-id-container">
+                <input type="text" 
+                       id="potjeId-1" 
+                       class="potje-id-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="off"
+                       aria-label="Potje ID karakter 1 van 8"
+                       pattern="[A-Za-z0-9]">
+				<input type="text" 
+                       id="potjeId-2" 
+                       class="potje-id-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="off"
+                       aria-label="Potje ID karakter 2 van 8"
+                       pattern="[A-Za-z0-9]">
+				<input type="text" 
+                       id="potjeId-3" 
+                       class="potje-id-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="off"
+                       aria-label="Potje ID karakter 3 van 8"
+                       pattern="[A-Za-z0-9]">
+				<input type="text" 
+                       id="potjeId-4" 
+                       class="potje-id-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="off"
+                       aria-label="Potje ID karakter 4 van 8"
+                       pattern="[A-Za-z0-9]">
+				<span class="potje-id-dash">-</span>
+				<input type="text" 
+                       id="potjeId-5" 
+                       class="potje-id-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="off"
+                       aria-label="Potje ID karakter 5 van 8"
+                       pattern="[A-Za-z0-9]">
+				<input type="text" 
+                       id="potjeId-6" 
+                       class="potje-id-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="off"
+                       aria-label="Potje ID karakter 6 van 8"
+                       pattern="[A-Za-z0-9]">
+				<input type="text" 
+                       id="potjeId-7" 
+                       class="potje-id-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="off"
+                       aria-label="Potje ID karakter 7 van 8"
+                       pattern="[A-Za-z0-9]">
+				<input type="text" 
+                       id="potjeId-8" 
+                       class="potje-id-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="off"
+                       aria-label="Potje ID karakter 8 van 8"
+                       pattern="[A-Za-z0-9]">
             </div>
-            <button type="submit">Login</button>
-        </form>
+            <input type="hidden" id="roomId" name="roomId" required>
+        </div>
+        
+        <div class="form-group" role="group" aria-labelledby="pin-label">
+            <label id="pin-label" for="pin-1" class="form-label">PIN code (4 cijfers):</label>
+            <div class="pin-container">
+                <input type="password" 
+                       id="pin-1" 
+                       class="pin-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="new-password"
+                       aria-label="PIN code cijfer 1 van 4"
+                       pattern="[0-9]">
+				<input type="password" 
+                       id="pin-2" 
+                       class="pin-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="new-password"
+                       aria-label="PIN code cijfer 2 van 4"
+                       pattern="[0-9]">
+				<input type="password" 
+                       id="pin-3" 
+                       class="pin-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="new-password"
+                       aria-label="PIN code cijfer 3 van 4"
+                       pattern="[0-9]">
+				<input type="password" 
+                       id="pin-4" 
+                       class="pin-input" 
+                       maxlength="1" 
+                       required 
+                       autocomplete="new-password"
+                       aria-label="PIN code cijfer 4 van 4"
+                       pattern="[0-9]">
+            </div>
+            <input type="hidden" id="pinCode" name="pinCode" required>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" 
+                    class="btn btn-primary btn-lg px-4 gap-3"
+                    aria-label="Login en start potje">
+                Login <span aria-hidden="true">&#x2192;</span>
+            </button>
+        </div>
+    </form>
+</div>
+            
+        </div>
     </main>
     <%- include('partials/footer') %>
+	
+	<script>
+        $(document).ready(function() {
+			
+			    // Add error handling with aria-live regions
+    function showError(message) {
+        $('.alert-danger').remove();
+        const errorDiv = $('<div>')
+            .addClass('alert alert-danger')
+            .attr({
+                'role': 'alert',
+                'aria-live': 'polite'
+            })
+            .text(message);
+        $('#loginForm').prepend(errorDiv);
+    }
+
+    // Add keyboard navigation
+    $('.potje-id-input, .pin-input').on('keydown', function(e) {
+        const $inputs = $(this).closest('div').find('input');
+        const index = $inputs.index(this);
+
+        switch(e.which) {
+            case 37: // Left arrow
+                if (index > 0) $inputs.eq(index - 1).focus();
+                break;
+            case 39: // Right arrow
+                if (index < $inputs.length - 1) $inputs.eq(index + 1).focus();
+                break;
+        }
+    });
+			   // Function to populate Potje ID inputs
+				function populatePotjeId(value) {
+					$('.potje-id-input').each(function(index) {
+						if (index < value.length) {
+							$(this).val(value[index].toUpperCase());
+						}
+					});
+				}
+
+				// Function to populate PIN inputs
+				function populatePin(value) {
+					$('.pin-input').each(function(index) {
+						if (index < value.length) {
+							$(this).val(value[index]);
+						}
+					});
+				}
+
+				// Populate form if URL parameters are present
+				if (initialRoomId) {
+					populatePotjeId(initialRoomId);
+					$('#roomId').val(initialRoomId);
+				}
+
+				if (initialPinCode) {
+					populatePin(initialPinCode);
+					$('#pinCode').val(initialPinCode);
+				}
+            // Potje ID input handling
+            $('.potje-id-container').on('input', '.potje-id-input', function() {
+                this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                if (this.value.length === this.maxLength) {
+                    let nextInput = $(this).next('.potje-id-input');
+                    if (nextInput.length === 0) {
+                        nextInput = $(this).next('.potje-id-dash').next('.potje-id-input');
+                    }
+                    if (nextInput.length > 0) {
+                        nextInput.focus();
+                    }
+                }
+            });
+
+            // PIN input handling
+            $('.pin-container').on('input', '.pin-input', function() {
+                this.value = this.value.replace(/\D/g, '');
+                if (this.value.length === this.maxLength) {
+                    $(this).next('.pin-input').focus();
+                }
+            });
+
+            // Handle backspace
+            $('.potje-id-container, .pin-container').on('keydown', 'input', function(e) {
+                if (e.which === 8 && this.value.length === 0) {
+                    let prevInput = $(this).prev('.potje-id-input');
+                    if (prevInput.length === 0) {
+                        prevInput = $(this).prev('.potje-id-dash').prev('.potje-id-input');
+                    }
+                    if (prevInput.length > 0) {
+                        prevInput.focus();
+                    }
+                }
+            });
+
+            // Form submission
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                var potjeId = $('.potje-id-input').map(function() {return this.value;}).get().join('');
+                var pin = $('.pin-input').map(function() {return this.value;}).get().join('');
+                
+                $('#roomId').val(potjeId);
+                $('#pinCode').val(pin);
+                
+                if (potjeId.length === 8 && pin.length === 4) {
+                    this.submit();
+                } else {
+                    alert('Please fill in all fields correctly.');
+                }
+            });
+        });
+    </script>
+	<script>
+    var initialRoomId = "<%= roomId || '' %>";
+    var initialPinCode = "<%= pinCode || '' %>";
+</script>
 </body>
 </html>

@@ -23,7 +23,7 @@ router.post('/teacher-login', async (req, res) => {
     res.redirect(`/rooms/${roomIdentifier}`);
   } catch (error) {
     console.error('Login error:', error);
-    res.render('teacher-login', { title: 'Teacher Login', error: error.message });
+    res.render('teacher-login', { title: 'Docent Login', error: error.message });
   }
 });
 
@@ -71,15 +71,15 @@ router.post('/register', async (req, res) => {
     const { email } = req.body;
     const { room } = await authService.registerTeacher(email);
     res.render('register', { 
-      title: 'Register', 
-      success: 'Potje is gestart! Alle details zijn ook naar je gemaild.',
+      title: 'Potje starten', 
+      success: 'Potje is gestart!',
       roomIdentifier: room.uniqueIdentifier,
       pinCode: room.pinCode
     });
   } catch (error) {
     console.error('Registration error:', error);
     res.render('register', { 
-      title: 'Register', 
+      title: 'Potje starten', 
       error: error.message
     });
   }

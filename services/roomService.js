@@ -36,13 +36,13 @@ class RoomService {
   async validateRoom(identifier, pinCode) {
     const room = await this.getRoomByIdentifier(identifier);
     if (!room) {
-      throw new Error('Room not found');
+      throw new Error('Potje niet gevonden');
     }
     if (room.pinCode !== pinCode) {
-      throw new Error('Invalid pin code');
+      throw new Error('Onjuiste pin code');
     }
     if (room.expiresAt < new Date()) {
-      throw new Error('Room has expired');
+      throw new Error('Sessie is verlopen');
     }
     return room;
   }

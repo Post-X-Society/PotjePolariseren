@@ -2,82 +2,329 @@
 <html lang="en">
 <head>
     <%- include('partials/head') %>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css"/>
     <style>
-        .video-item {
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .video-preview {
-            width: 150px;
-            height: auto;
-        }
-        .editable:hover {
-            background-color: #f8f9fa;
-            cursor: pointer;
-        }
-        .truncate {
-            max-width: 150px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .processing-message {
-            color: #856404;
-            background-color: #fff3cd;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .error-message {
-            color: #721c24;
-            background-color: #f8d7da;
-            padding: 10px;
-            border-radius: 5px;
-        }
-		.table {
-			background-color: #fff;
-		}
+		
+:root {
+    --primary-color: #000000;
+    --secondary-color: #ffffff;
+    --accent-color: #EE72F8;
+    --border-color: #ddd;
+    --error-color: #721c24;
+    --warning-color: #856404;
+    --info-color: #0dcaf0;
+    --success-color: #4caf50;
+}
+
+/* Base styles */
+.container {
+    margin-top: 1.5rem;
+}
+
+/* Page header styles */
+.page-header {
+    background-color: var(--secondary-color);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0.25rem;
+}
+
+.page-header h1 {
+    margin-bottom: 0.5rem;
+}
+
+.expiry-date {
+    margin-bottom: 0;
+}
+
+.room-identifier {
+    font-family: monospace;
+    font-size: 1.2em;
+    letter-spacing: 1px;
+}
+
+/* Card styles */
+.card {
+    border-radius: 0;
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    border-radius: 0;
+    padding: 1rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* Form styles */
+.upload-form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.upload-form-label {
+    width: 100px;
+    text-align: right;
+    padding-right: 1rem;
+    color: var(--primary-color);
+}
+
+.upload-form-input {
+    flex-grow: 1;
+}
+
+/* Custom file input */
+.custom-file-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.custom-file-input:focus ~ .custom-file-label {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Table styles */
+.table {
+    background-color: var(--secondary-color);
+    margin-bottom: 1rem;
+}
+
+.table thead th {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    border-bottom: 0;
+    vertical-align: middle;
+}
+
+/* DataTables specific styles */
+div.dataTables_wrapper div.dataTables_length,
+div.dataTables_wrapper div.dataTables_filter,
+div.dataTables_wrapper div.dataTables_info,
+div.dataTables_wrapper div.dataTables_paginate {
+    background-color: var(--secondary-color);
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid #aaa;
+    border-radius: 3px;
+    padding: 5px;
+    background-color: transparent;
+    width: 50px !important;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    border: 1px solid #aaa;
+    border-radius: 3px;
+    padding: 5px;
+    background-color: transparent;
+    margin-left: 3px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0.5rem;
+    margin: 0 0.25rem;
+    border-radius: 0.25rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--primary-color);
+    color: var(--secondary-color) !important;
+    border: none;
+}
+
+/* Video and content styles */
+.video-item {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+}
+
+.video-preview {
+    width: 150px;
+    height: auto;
+}
+
+.comment-cell {
+    max-width: 150px;
+    word-wrap: break-word;
+}
+
+.truncate {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Status messages */
+.processing-message {
+    color: var(--warning-color);
+    background-color: #fff3cd;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.error-message {
+    color: var(--error-color);
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+/* Modal styles */
+.modal-dialog {
+    max-width: 80%;
+}
+
+.modal-content {
+    border-radius: 0;
+}
+
+/* Button styles */
+.btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem 1rem;
+}
+
+.btn-sm {
+    min-height: 35px;
+    min-width: 35px;
+}
+
+/* Focus styles for accessibility */
+:focus {
+    outline: 3px solid #4A90E2;
+    outline-offset: 2px;
+}
+
+/* Progress bar */
+.progress {
+    height: 1.5rem;
+    margin-top: 1rem;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .upload-form-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .upload-form-label {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-dialog {
+        max-width: 95%;
+        margin: 1rem auto;
+    }
+
+    .view-video-score,
+    .view-transcript {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* High contrast mode support */
+@media (forced-colors: active) {
+    .btn,
+    .card,
+    .table {
+        border: 1px solid currentColor;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
     </style>
 </head>
 <body>
     <%- include('partials/header') %>
     <div class="container mt-4">
-        <h1>Klas ID: <%= room.uniqueIdentifier %></h1>
-        <p>Verloopt op: <%= new Date(room.expiresAt).toLocaleDateString() %></p>
+        <div class="page-header">
+		<h1>Potje Polariseren: <span class="room-identifier"><%= room.uniqueIdentifier.slice(0, 4).toUpperCase() %>-<%= room.uniqueIdentifier.slice(4).toUpperCase() %></span></h1>
+		<p class="expiry-date">Verloopt op: <%= new Date(room.expiresAt).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam', day: '2-digit', month: '2-digit', year: '2-digit'}).replace(/\//g, '-') %></p>
+	</div>
 		
 		<!-- Add upload form -->
-        <div class="card mb-4">
+        <div class="card mb-4" role="region" aria-labelledby="uploadFormTitle">
+			<div class="card-header">
+				<h2 class="card-title mb-0" id="uploadFormTitle">Upload een video</h2>
+			</div>
             <div class="card-body">
-                <h5 class="card-title">Upload een video</h5>
                 <form id="uploadForm" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="title">Video Titel:</label>
-                        <input type="text" class="form-control" id="title" name="title" required>
+                    <div class="upload-form-row">
+                        <label for="title" class="upload-form-label">Titel:</label>
+                        <div class="upload-form-input">
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="video">Video Bestand:</label>
-                        <input type="file" class="form-control-file" id="video" name="video" accept="video/*" required>
+                    <div class="upload-form-row">
+                        <label for="video" class="upload-form-label">Bestand:</label>
+                        <div class="upload-form-input">
+                            <div class="input-group">
+                                <div class="custom-file">
+									<input type="file" 
+										   class="custom-file-input" 
+										   id="video" 
+										   name="video" 
+										   accept="video/*" 
+										   required
+										   aria-label="Selecteer video bestand">
+									<label class="custom-file-label" for="video">Kies bestand</label>
+								</div>
+                            </div>
+                        </div>
                     </div>
-                    <input type="hidden" name="roomId" value="<%= room.id %>">
-                    <button type="submit" class="btn btn-primary">Upload Video</button>
+                    <div class="upload-form-row">
+                        <div class="upload-form-label"></div>
+                        <div class="upload-form-input">
+                            <input type="hidden" name="roomId" value="<%= room.id %>">
+                            <button type="submit" class="btn btn-primary" aria-label="Upload video">Upload Video</button>
+                        </div>
+                    </div>
                 </form>
-                <div class="progress mt-3" id="uploadProgressBar">
+                <div class="progress" id="uploadProgressBar" style="display: none;">
                     <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
                 </div>
             </div>
         </div>
         
-        <table class="table table-striped">
+        <table id="videosTable" class="table table-striped" role="grid" aria-label="Videos overzicht">
             <thead>
                 <tr>
                     <th>Titel</th>
+                    <th>Video</th>
+                    <th>Score</th>
+                    <th>Transcriptie</th>
+                    <th>Comment</th>
                     <th>Uploader</th>
                     <th>Datum</th>
-                    <th>Comment</th>
-                    <th>Transcriptie</th>
-                    <th>Bewerkte Transcriptie</th>
-                    <th>Video</th>
                     <th>Acties</th>
                 </tr>
             </thead>
@@ -88,46 +335,6 @@
                             <span class="editable" data-type="title" data-id="<%= video.id %>"><%= video.title %></span>
                         </td>
                         <td>
-                            <% if (video.student) { %>
-                                <%= video.student.email %> (Student)
-                            <% } else if (video.teacher) { %>
-                                <%= video.teacher.email %> (Teacher)
-                            <% } else { %>
-                                Unknown
-                            <% } %>
-                        </td>
-                        <td><%= new Date(video.createdAt).toLocaleString() %></td>
-                        <td>
-                            <span class="editable truncate" data-type="comment" data-id="<%= video.id %>" data-toggle="collapse" data-target="#comment-<%= video.id %>">
-                                <%= video.comment ? video.comment.substring(0, 150) : 'No comment' %>
-                            </span>
-                            <div id="comment-<%= video.id %>" class="collapse mt-2">
-                                <%= video.comment %>
-                            </div>
-                        </td>
-                        <td>
-                            <% if (video.processingStatus === 'completed' && video.transcription) { %>
-                                <span class="truncate" data-toggle="collapse" data-target="#transcription-<%= video.id %>">
-                                    <%= video.transcription.substring(0, 150) %>...
-                                </span>
-                                <div id="transcription-<%= video.id %>" class="collapse mt-2">
-                                    <%= video.transcription %>
-                                </div>
-                            <% } else if (video.processingStatus === 'processing' || video.processingStatus === 'pending_transcription' || video.processingStatus === 'transcribing') { %>
-                                <span class="processing-message">Transcription in progress...</span>
-                            <% } else { %>
-                                <span>No transcription available</span>
-                            <% } %>
-                        </td>
-                        <td>
-                            <span class="editable truncate" data-type="editedTranscription" data-id="<%= video.id %>" data-toggle="collapse" data-target="#edited-transcription-<%= video.id %>">
-                                <%= video.editedTranscription ? video.editedTranscription.substring(0, 150) : 'No edited transcription' %>
-                            </span>
-                            <div id="edited-transcription-<%= video.id %>" class="collapse mt-2">
-                                <%= video.editedTranscription || '' %>
-                            </div>
-                        </td>
-                        <td>
                             <% if (video.processingStatus === 'completed') { %>
                                 <video class="video-preview" controls>
                                     <source src="/videos/stream/<%= video.filePath %>" type="video/mp4">
@@ -135,34 +342,194 @@
                                 </video>
                             <% } else if (video.processingStatus === 'processing' || video.processingStatus === 'pending_transcription' || video.processingStatus === 'transcribing' || video.processingStatus == '') { %>
                                 <div class="processing-message">
-                                    Video is being processed...
+                                    Video wordt verwerkt...
                                 </div>
                             <% } else { %>
                                 <div class="error-message">
-                                    Error processing video
+                                    Verwerkings error
                                 </div>
                             <% } %>
                         </td>
                         <td>
-                            <button class="btn btn-danger btn-sm delete-video" data-id="<%= video.id %>">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                            <% if (video.processingStatus !== 'completed' && video.processingStatus !== 'processing' && video.processingStatus !== 'transcribing') { %>
-                                <button class="btn btn-primary btn-sm retry-transcription" data-id="<%= video.id %>">
-                                    <i class="fas fa-redo"></i> Retry Transcription
-                                </button>
+                            <% if (video.scoringStatus === 'completed') { %>
+                                <%
+                                  const scoreData = typeof video.scoreData === 'string' ? JSON.parse(video.scoreData) : video.scoreData;
+                                  const sum = Object.values(scoreData).reduce((acc, category) => acc + category.score, 0);
+                                  const percentage = (sum / 30) * 100;
+                                %>
+								<p><span class="badge rounded-pill"><span class="display-4"><%= percentage.toFixed(0) %>%</span></span></p>
+                                <a href="/videos/viewScore/<%= video.id %>"><button class="btn btn-info btn-sm view-video-score" aria-label="Bekijk score"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Bekijk</button></a>
+                            <% } else if (video.processingStatus === 'processing' || video.processingStatus === 'pending_transcription' || video.processingStatus === 'transcribing') { %>
+                                <div class="processing-message">Wacht op transcriptie...</div>
+                            <% } else if (video.scoringStatus === 'processing' || video.scoringStatus === 'pending' || video.scoringStatus == '') { %>
+                                <div class="processing-message">Video wordt gescoord...</div>
+                            <% } else { %>
+                                <div class="error-message">Score error</div>
                             <% } %>
+                        </td>
+                        <td>
+                        <% if (video.processingStatus === 'completed' && video.transcription) { %>
+                            <button class="btn btn-primary btn-sm view-transcript" 
+                                    data-id="<%= video.id %>"
+                                    data-transcription="<%= encodeURIComponent(video.transcription) %>" aria-label="Bekijk transcript">
+                                <i class="fa-solid fa-file" aria-hidden="true"></i> Bekijk
+                            </button>
+                        <% } else if (video.processingStatus === 'processing' || video.processingStatus === 'pending_transcription' || video.processingStatus === 'transcribing') { %>
+                            <div class="processing-message">Transcriptie bezig...</div>
+                        <% } else { %>
+                            <span>Geen transcriptie beschikbaar</span>
+                        <% } %>
+                    </td>
+                        <td class="comment-cell">
+                            <span class="editable truncate" data-type="comment" data-id="<%= video.id %>">
+                                <%= video.comment ? video.comment.substring(0, 150) : 'Geen comment' %>
+                            </span>
+                        </td>
+                        <td>
+                            <% if (video.student) { %>
+                                <%= video.student.email %> (Student)
+                            <% } else if (video.teacher) { %>
+                                <%= video.teacher.email %> (Docent)
+                            <% } else { %>
+                                Unknown
+                            <% } %>
+                        </td>
+                        <td>
+                            <%= new Date(video.createdAt).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-') %>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger btn-sm delete-video" 
+									data-id="<%= video.id %>"
+									aria-label="Verwijder video">
+								<i class="fas fa-trash" aria-hidden="true"></i> Delete
+							</button>
                         </td>
                     </tr>
                 <% }) %>
             </tbody>
         </table>
     </div>
+	
+	<!-- Transcript Modal -->
+    <div class="modal fade" id="transcriptModal" tabindex="-1" role="dialog" aria-labelledby="transcriptModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="transcriptModalLabel">Transcript</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="transcriptModalBody">
+                    <!-- Transcript content will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <%- include('partials/footer') %>
+	
+	 <!-- Add DataTables JS -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
 
     <script>
     $(document).ready(function() {
+    // Global variables
+    var table = $('#videosTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Dutch.json"
+        },
+        "columnDefs": [
+            { "orderable": false, "targets": [1, 3, 7] }
+        ],
+        "order": [[6, "desc"]]
+    });
+
+    // Function declarations
+    function bindTranscriptClickHandlers() {
+        $(document).off('click', '.view-transcript').on('click', '.view-transcript', function() {
+            var transcription = decodeURIComponent($(this).data('transcription'));
+            $('#transcriptModalBody').text(transcription);
+            $('#transcriptModal').modal('show');
+        });
+    }
+		
+	// Reinitialize DataTable after any content changes
+		function reinitializeDataTable() {
+			table.destroy();
+			table = $('#videosTable').DataTable({
+				"language": {
+					"url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Dutch.json"
+				},
+				"columnDefs": [
+					{ "orderable": false, "targets": [1, 3, 7] }
+				],
+				"order": [[6, "desc"]]
+			});
+		}
+
+    function checkVideoStatus(videoId) {
+        $.get('/videos/' + videoId + '/status', function(data) {
+            var row = $(`tr:has([data-id="${videoId}"])`);
+            var videoCell = row.find('td:eq(1)');
+            var scoreCell = row.find('td:eq(2)');
+            var transcriptCell = row.find('td:eq(3)');
+
+            if (!videoCell.find('video').length) {
+                if (data.processingStatus === 'completed') {
+                    videoCell.html(`
+                        <video class="video-preview" controls>
+                            <source src="/videos/stream/${data.filePath}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `);
+
+                    if (data.transcription) {
+                        transcriptCell.html(`
+                            <button class="btn btn-primary btn-sm view-transcript" 
+                                    data-id="${videoId}"
+                                    data-transcription="${encodeURIComponent(data.transcription)}"
+                                    aria-label="Bekijk transcript">
+                                <i class="fa-solid fa-file" aria-hidden="true"></i> Bekijk
+                            </button>
+                        `);
+                    }
+                } else if (data.processingStatus === 'failed') {
+                    videoCell.html('<div class="error-message">Verwerkings error</div>');
+                }
+            }
+
+            if (!scoreCell.find('.badge').length) {
+                if (data.scoringStatus === 'completed' && data.scoreData) {
+                    const scoreData = typeof data.scoreData === 'string' ? JSON.parse(data.scoreData) : data.scoreData;
+                    const sum = Object.values(scoreData).reduce((acc, category) => acc + category.score, 0);
+                    const percentage = (sum / 30) * 100;
+
+                    scoreCell.html(`
+                        <p><span class="badge rounded-pill"><span class="display-4">${percentage.toFixed(0)}%</span></span></p>
+                        <a href="/videos/viewScore/${videoId}"><button class="btn btn-info btn-sm view-video-score"><i class="fa-solid fa-magnifying-glass"></i> Bekijk</button></a>
+                    `);
+                } else if (data.processingStatus === 'processing' || data.processingStatus === 'pending_transcription' || data.processingStatus === 'transcribing') {
+                    scoreCell.html('<div class="processing-message">Wacht op transcriptie...</div>');
+                } else if (data.scoringStatus === 'processing' || data.scoringStatus === 'pending' || data.scoringStatus === '') {
+                    scoreCell.html('<div class="processing-message">Video wordt gescoord...</div>');
+                }
+            }
+
+            const isVideoProcessing = data.processingStatus !== 'completed' && data.processingStatus !== 'failed';
+            const isScoringProcessing = data.scoringStatus !== 'completed' && data.scoringStatus !== 'failed';
+            const hasProcessingMessage = row.find('.processing-message').length > 0;
+
+            if ((isVideoProcessing || isScoringProcessing) && hasProcessingMessage) {
+                setTimeout(function() { checkVideoStatus(videoId); }, 5000);
+            }
+        });
+    }
+
+    // Event Bindings
+    bindTranscriptClickHandlers();
+		
         // Make content editable
         $('.editable').on('click', function(e) {
             e.stopPropagation();
@@ -205,24 +572,37 @@
             });
         });
 
-        // Handle video deletion
-        $('.delete-video').on('click', function() {
-            var videoId = $(this).data('id');
-            if (confirm('Are you sure you want to delete this video?')) {
-                $.ajax({
-                    url: `/videos/${videoId}`,
-                    method: 'DELETE',
-                    success: function() {
-                        $(`tr:has(button[data-id="${videoId}"])`).remove();
-                    },
-                    error: function() {
-                        alert('Failed to delete the video. Please try again.');
-                    }
-                });
-            }
-        });
+        // Modify the video deletion handler
+		$('.delete-video').on('click', function() {
+			var videoId = $(this).data('id');
+			var table = $('#videosTable').DataTable(); // Get DataTable instance
+			var row = $(this).closest('tr'); // Get the row to be deleted
+
+			if (confirm('Weet je zeker dat je deze video wilt verwijderen?')) {
+				$.ajax({
+					url: `/videos/${videoId}`,
+					method: 'DELETE',
+					success: function() {
+						// Remove the row from DataTable and redraw
+						table
+							.row(row)
+							.remove()
+							.draw();
+					},
+					error: function() {
+						alert('Failed to delete the video. Please try again.');
+					}
+				});
+			}
+		});
 		
-		// Handle video upload
+		// Add this to update the file input label with the selected filename
+        $('.custom-file-input').on('change', function() {
+            var fileName = $(this).val().split('\\').pop();
+            $(this).next('.custom-file-label').html(fileName);
+        });
+
+        // Modify the upload form submission to show/hide the progress bar
         $('#uploadForm').on('submit', function(e) {
             e.preventDefault();
             var formData = new FormData(this);
@@ -239,59 +619,38 @@
                         if (evt.lengthComputable) {
                             var percentComplete = evt.loaded / evt.total;
                             percentComplete = parseInt(percentComplete * 100);
-                            $('#uploadProgressBar').show().find('.progress-bar').width(percentComplete + '%').text(percentComplete + '%');
+                            $('#uploadProgressBar').show().find('.progress-bar')
+                                .width(percentComplete + '%')
+                                .attr('aria-valuenow', percentComplete)
+                                .text(percentComplete + '%');
                         }
                     }, false);
                     return xhr;
                 },
+                beforeSend: function() {
+                    $('#uploadProgressBar').show();
+                },
                 success: function(response) {
-                    alert('Video uploaded successfully!');
-                    location.reload(); // Reload the page to show the new video
+                    alert('Video is geupload!');
+                    location.reload();
                 },
                 error: function(xhr, status, error) {
-                    alert('An error occurred while uploading the video.');
+                    alert('Error: uploaden niet gelukt');
                     console.error(error);
+                },
+                complete: function() {
+                    $('#uploadProgressBar').hide();
                 }
             });
-        });
-
-        // Function to check video processing status
-        function checkVideoStatus(videoId) {
-            $.get('/videos/' + videoId + '/status', function(data) {
-                var videoContainer = $('#video-container-' + videoId);
-                if (data.processingStatus === 'completed') {
-                    videoContainer.html('<video class="video-preview" controls><source src="/videos/stream/' + data.filePath + '" type="video/mp4">Your browser does not support the video tag.</video>');
-                } else if (data.processingStatus === 'failed') {
-                    videoContainer.html('<div class="alert alert-danger">Processing failed. Please try uploading again.</div>');
-                } else {
-                    // If still processing, check again after 5 seconds
-                    setTimeout(function() { checkVideoStatus(videoId); }, 5000);
-                }
-            });
-        }
-
-        // Start checking status for videos that are being processed
-        $('.video-preview[data-status="processing"]').each(function() {
-            var videoId = $(this).data('id');
-            checkVideoStatus(videoId);
         });
 		
-		// Add functionality for retry transcription
-        $('.retry-transcription').on('click', function() {
-            const videoId = $(this).data('id');
-            if (confirm('Are you sure you want to retry transcription for this video?')) {
-                $.ajax({
-                    url: `/videos/${videoId}/retry-transcription`,
-                    method: 'POST',
-                    success: function(result) {
-                        alert('Transcription process restarted. Please refresh the page in a few moments.');
-                    },
-                    error: function() {
-                        alert('Failed to restart transcription. Please try again.');
-                    }
-                });
-            }
-        });
+		// Check processing videos
+		$('tr:has(.processing-message)').each(function() {
+			var videoId = $(this).find('[data-id]').data('id');
+			if (videoId) {
+				checkVideoStatus(videoId);
+			}
+		});
     });
     </script>
 </body>

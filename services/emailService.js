@@ -22,16 +22,16 @@ class EmailService {
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: to,
-      subject: 'Your Room Registration Details',
-      text: `Thank you for registering! Here are your room details:\n\nRoom Identifier: ${roomIdentifier}\nPIN: ${pinCode}\n\nPlease keep this information safe.`,
+      subject: 'Potje Polariseren inloggegevens',
+      text: `Bedankt voor het aanmaken van een potje! Dit zijn de inlogggevens:\n\nPotje ID: ${roomIdentifier}\nPIN: ${pinCode}\n\nHoud deze informatie geheimd.`,
       html: `
-        <h1>Thank you for registering!</h1>
-        <p>Here are your room details:</p>
+        <h1>Bedankt voor het aanmaken van een potje!</h1>
+        <p>Dit zijn de inlogggevens:</p>
         <ul>
-          <li><strong>Room Identifier:</strong> ${roomIdentifier}</li>
+          <li><strong>Potje ID:</strong> ${roomIdentifier}</li>
           <li><strong>PIN:</strong> ${pinCode}</li>
         </ul>
-        <p>Please keep this information safe.</p>
+        <p>Houd deze informatie geheim.</p>
       `
     };
 
@@ -49,13 +49,13 @@ class EmailService {
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: to,
-      subject: 'Your Video Upload Access Link',
-      text: `Here's your access link to upload videos: ${accessLink}\n\nThis link will expire in 1 hour.`,
+      subject: 'Potje Polariseren toegangslink',
+      text: `Volg deze link om videos toe te voegen aan de "Potje Polariseren" sessie van jouw klas:\n\n${accessLink}\n\nDeze link verloopt na 1 uur.`,
       html: `
-        <h1>Video Upload Access</h1>
-        <p>Here's your access link to upload videos:</p>
+        <h1>Potje Polariseren toegangslink</h1>
+        <p>Volg deze link om videos toe te voegen aan de "Potje Polariseren" sessie van jouw klas:</p>
         <a href="${accessLink}">${accessLink}</a>
-        <p>This link will expire in 1 hour.</p>
+        <p>Deze link verloopt na 1 uur.</p>
       `
     };
 

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <%- include('partials/head') %>
+    <style>
+:root {
+    --primary-text: #000000;
+    --secondary-text: #ffffff;
+    --error-red: #c62828;
+    --warning-yellow: #856404;
+    --success-green: #2e7d32;
+    --link-blue: #0056b3;
+    --focus-outline: #4A90E2;
+    --modal-overlay: rgba(0, 0, 0, 0.4);
+    --border-light: #f0f0f0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Accessibility Utilities */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.visually-hidden-focusable:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+}
+
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--secondary-text);
+    padding: 8px;
+    z-index: 100;
+    transition: top 0.2s ease-in-out;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Layout */
+.centered-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.content-row {
+    background-color: var(--secondary-text);
+    border-radius: 0;
+    box-shadow: 0 0 10px var(--shadow-color);
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+/* Score Bar */
+.score-bar {
+    height: 30px;
+    background-color: var(--border-light);
+    border-radius: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.score-fill {
+    height: 100%;
+    width: 0;
+    background-color: var(--success-green);
+    transition: width 0.5s ease-in-out, background-image 0.5s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.opacity-wave {
+    position: absolute;
+    top: 0;
+    left: -50px;
+    width: 50px;
+    height: 100%;
+    background: linear-gradient(
+        to right, 
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: wave 3s linear infinite;
+}
+
+@keyframes wave {
+    0% { left: -50px; }
+    100% { left: 100%; }
+}
+
+/* Debug Info */
+#debug-info {
+    margin-top: 10px;
+    font-size: 0.8em;
+    color: #666;
+    display: none;
+}
+
+/* Video and Transcript Layout */
+.video-transcript-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.video-container {
+    flex: 1;
+    min-width: 300px;
+}
+
+.transcript-container {
+    flex: 2;
+    min-width: 300px;
+    padding-left: 1rem;
+}
+
+/* Status Messages */
+.processing-message, .error-message {
+    padding: 15px;
+    border-radius: 0;
+    text-align: center;
+    font-weight: bold;
+}
+
+.processing-message {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+}
+
+.error-message {
+    background-color: #ffebee;
+    color: var(--error-red);
+}
+
+/* Video Details */
+.video-details {
+    text-align: center;
+    background-color: var(--primary-text);
+    color: var(--secondary-text);
+    padding: 20px;
+}
+
+.video-details h1 {
+    margin-bottom: 10px;
+}
+
+.video-info {
+    font-size: 0.8em;
+}
+
+/* Navigation */
+.back-link {
+    align-self: flex-start;
+    margin-bottom: 10px;
+    text-decoration: none;
+    color: var(--link-blue);
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* Transcript */
+.transcript-preview {
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+}
+
+.transcript-preview:hover,
+.transcript-preview:focus {
+    background-color: var(--border-light);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.action-buttons button {
+    margin-bottom: 10px;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: var(--modal-overlay);
+}
+
+.modal-content {
+    background-color: var(--secondary-text);
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 8px;
+}
+
+.close:hover,
+.close:focus {
+    color: var(--primary-text);
+}
+
+/* Focus States */
+:focus {
+    outline: 3px solid var(--focus-outline);
+    outline-offset: 2px;
+}
+
+button:focus,
+.transcript-preview:focus,
+.back-link:focus {
+    outline: 3px solid var(--focus-outline);
+    outline-offset: 2px;
+}
+
+/* Indicator Cards */
+.indicator-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.indicator-card {
+    width: 100%;
+    margin-bottom: 0; /* Remove margin-bottom since we're using grid gap */
+    border: 1px solid var(--border-light);
+}
+
+/* Update the divider style */
+.divider {
+    grid-column: 1 / -1; /* Make divider span all columns */
+    margin: 10px 0;
+}
+
+/* Keep the responsive design update */
+@media (max-width: 768px) {
+    .indicator-cards {
+        grid-template-columns: 1fr; /* Single column on mobile */
+    }
+}
+
+.indicator-card .card-header {
+    background-color: #f8f9fa;
+    color: var(--primary-text);
+    padding: 1rem;
+}
+
+.indicator-card.dark-header .card-header {
+    background-color: var(--primary-text);
+    color: var(--secondary-text);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .video-transcript-row {
+        flex-direction: column;
+    }
+
+    .indicator-card {
+        width: 100%;
+    }
+
+    .video-container,
+    .transcript-container {
+        min-width: 100%;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .score-fill,
+    .opacity-wave {
+        transition: none;
+        animation: none;
+    }
+
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (forced-colors: active) {
+    .content-row,
+    .indicator-card,
+    .transcript-preview,
+    .modal-content {
+        border: 1px solid currentColor;
+    }
+
+    .score-fill {
+        background-color: currentColor;
+    }
+
+    button {
+        border: 1px solid currentColor;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .modal,
+    .action-buttons,
+    .back-link {
+        display: none;
+    }
+
+    .content-row {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    .score-fill {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}
+    </style>
+</head>
+<body>
+	<a href="#main-content" class="skip-link visually-hidden visually-hidden-focusable">
+		Ga naar hoofdinhoud
+	</a>
+    <%- include('partials/header') %>
+    <main class="centered-content">
+		<a href="javascript:history.back()" class="back-link">&larr; Terug</a>
+		
+        <div class="content-row video-details">
+            <h1><%= video.title %></h1>
+            <p class="video-info">
+                ID: <%= video.id %> | 
+                Created by: 
+                <% if (video.student) { %>
+                    <%= video.student.email %> (Student)
+                <% } else if (video.teacher) { %>
+                    <%= video.teacher.email %> (Teacher)
+                <% } else { %>
+                    Unknown
+                <% } %>
+                | Created at: <%= new Date(video.createdAt).toLocaleString('nl-NL', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) %>
+            </p>
+        </div>
+
+        <% if (video.scoringStatus === 'completed') { %>
+           <div class="content-row p-3">
+                <% const scoreData = typeof video.scoreData === 'string' ? JSON.parse(video.scoreData) : video.scoreData;
+                   const sum = Object.values(scoreData).reduce((acc, category) => acc + category.score, 0);
+                   const percentage = (sum / 30) * 100; %>
+                <h2>Polarisatie Score: <%= percentage.toFixed(0) %>%</h2>
+                <div class="score-bar">
+                    <div class="score-fill" data-score="<%= percentage %>">
+                        <div class="opacity-wave"></div>
+                    </div>
+                </div>
+                <div id="debug-info"></div>
+            </div>
+         <% } else if (video.scoringStatus === 'processing' || video.scoringStatus === '') { %>
+            <div class="content-row p-3">
+                <div class="processing-message">
+                    Video is being scored...
+                </div>
+            </div>
+        <% } else { %>
+            <div class="content-row p-3">
+                <div class="error-message">
+                    Error scoring video
+                </div>
+            </div>
+        <% } %>     
+
+
+        <div class="content-row video-transcript-row p-3">
+            <div class="video-container">
+                <% if (video.processingStatus === 'completed') { %>
+                    <video controls width="100%" style="max-height: 200px;" aria-label="Video afspeler">
+						<source src="/videos/stream/<%= video.filePath %>" type="video/mp4">
+						<p>Your browser does not support the video tag. Download the <a href="/videos/stream/<%= video.filePath %>">video</a> instead.</p>
+					</video>
+                <% } else if (video.processingStatus === 'processing' || video.processingStatus === 'pending_transcription' || video.processingStatus === 'transcribing' || video.processingStatus === '') { %>
+                    <div class="processing-message">
+                        Video is being processed...
+                    </div>
+                <% } else { %>
+                    <div class="error-message">
+                        Error processing video
+                    </div>
+                <% } %>
+            </div>
+            <div class="transcript-container pl-3">
+                <h3>Transcript</h3>
+                <% if (video.processingStatus === 'completed' && video.transcription) { %>
+                    <div class="transcript-preview" 
+						 tabindex="0" 
+						 role="button" 
+						 aria-label="Open volledig transcript"
+						 data-full-transcript="<%= video.transcription %>">
+						<%= video.transcription.slice(0, 300) + (video.transcription.length > 300 ? '...' : '') %>
+						<button type="button" class="btn btn-link">Bekijk hele transcript...</button>
+					</div>
+                <% } else if (video.processingStatus === 'processing' || video.processingStatus === 'pending_transcription' || video.processingStatus === 'transcribing') { %>
+                    <div class="processing-message">Transcription in progress...</div>
+                <% } else { %>
+                    <div>No transcription available</div>
+                <% } %>
+            </div>
+        </div>
+
+        <% if (video.scoringStatus === 'completed' && video.scoreData) { %>
+            <div class="content-row p-3">
+				<h2>Uitleg van score</h2>
+				<div class="alert alert-warning" role="alert">
+					<b>Let op:</b> de scores zijn gemaakt door een algoritme. Algoritmes begrijpen taal niet altijd. Zie jij gekke dingen?
+				</div>
+                <div class="indicator-cards">
+                    <% 
+                    const scoreData = typeof video.scoreData === 'string' ? JSON.parse(video.scoreData) : video.scoreData;
+                    const titleMapping = {
+                        "Verdeeldheid": "Wij-Zij denken",
+                        "Emotioneel geladen": "Emotie",
+                        "Negatieve Stereotypes": "Vooroordelen",
+                        "Stelligheid": "Stelligheid",
+                        "Sentiment": "Sentiment",
+                        "Partijdigheid": "Partijdigheid"
+                    };
+                    const orderMapping = [
+                        "Verdeeldheid",
+                        "Emotioneel geladen",
+                        "Negatieve Stereotypes",
+                        "Stelligheid",
+                        "Sentiment",
+                        "Partijdigheid"
+                    ];
+                    let cardCount = 0;
+                    %>
+                    <% orderMapping.forEach((indicator) => { %>
+                        <% if (scoreData[indicator]) { %>
+                            <% if (cardCount === 4) { %>
+                                <div class="divider"><hr></div>
+                            <% } %>
+                            <div class="indicator-card card <%= cardCount < 4 ? 'dark-header' : '' %>">
+                                <div class="card-header">
+                                    <h4><%= titleMapping[indicator] %>: <%= scoreData[indicator].score %></h4>
+                                </div>
+                                <div class="card-body">
+                                    <p><%= scoreData[indicator].explanation %></p>
+                                </div>
+                            </div>
+                            <% cardCount++; %>
+                        <% } %>
+                    <% }); %>
+                </div>
+            </div>  
+        <% } %>
+		
+		<div class="content-row p-3">
+            <div class="action-buttons">
+                <button class="btn btn-danger btn-sm delete-video" 
+						data-id="<%= video.id %>"
+						aria-label="Verwijder deze video">
+					<i class="fas fa-trash" aria-hidden="true"></i> Delete
+				</button>
+            </div>
+        </div>
+
+    </main>
+	
+	<!-- Modal for full transcript -->
+	<div id="transcriptModal" class="modal" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
+		<div class="modal-content">
+			<h2 id="modalTitle">Volledig Transcript</h2>
+			<button type="button" class="close" aria-label="Sluit transcript">
+				<span aria-hidden="true">&times;</span>
+			</button>
+			<div id="fullTranscript" tabindex="0"></div>
+		</div>
+	</div>
+    <%- include('partials/footer') %>
+	
+    <script>
+    $(document).ready(function() {
+        // Make transcript editable
+        $('.editable').on('click', function(e) {
+            e.stopPropagation();
+            var element = $(this);
+            var type = element.data('type');
+            var id = element.data('id');
+            var currentText = element.text().trim();
+            var textarea = $('<textarea class="form-control transcript-textarea"></textarea>');
+            
+            textarea.val(currentText);
+            element.hide().after(textarea);
+            textarea.focus();
+
+            function saveChanges() {
+                var newText = textarea.val();
+                if (newText !== currentText) {
+                    $.ajax({
+                        url: `/videos/${id}/${type}`,
+                        method: 'PUT',
+                        data: { [type]: newText },
+                        success: function(response) {
+                            element.text(newText);
+                        },
+                        error: function() {
+                            alert('Failed to update. Please try again.');
+                        }
+                    });
+                }
+                textarea.remove();
+                element.show();
+            }
+
+            textarea.on('blur', saveChanges);
+            textarea.on('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveChanges();
+                }
+            });
+        });
+
+        // Handle video deletion
+        $('.delete-video').on('click', function() {
+            var videoId = $(this).data('id');
+            if (confirm('Are you sure you want to delete this video?')) {
+                $.ajax({
+                    url: `/videos/${videoId}`,
+                    method: 'DELETE',
+                    success: function() {
+						updateScreenReaderStatus('Video is verwijderd');
+						<% if (video.teacher) { %>
+                        window.location.href = "/rooms/<%= video.room.uniqueIdentifier %>"; // Redirect to teacher room after deletion
+						<% } else { %>
+						window.history.back(); // Redirect to student room after deletion
+						<% } %>
+                    },
+                    error: function() {
+                        alert('Failed to delete the video. Please try again.');
+                    }
+                });
+            }
+        });
+		
+		// Handle transcript preview click
+        $('.transcript-preview').on('click', function() {
+            var fullTranscript = $(this).data('full-transcript');
+            $('#fullTranscript').text(fullTranscript);
+            $('#transcriptModal').css('display', 'block');
+        });
+
+        // Handle modal close
+        $('.close').on('click', function() {
+            $('#transcriptModal').css('display', 'none');
+        });
+
+        // Close modal when clicking outside of it
+        $(window).on('click', function(event) {
+            if (event.target == document.getElementById('transcriptModal')) {
+                $('#transcriptModal').css('display', 'none');
+            }
+        });
+		
+		// Function to set the gradient and wave animation based on the score
+        function setScoreGradient() {
+            $('.score-fill').each(function() {
+                var score = $(this).data('score');
+                var gradient = '';
+                
+                if (score <= 30) {
+                    gradient = `linear-gradient(to right, #4caf50, #ffeb3b)`;
+                } else if (score <= 50) {
+                    gradient = `linear-gradient(to right, #4caf50, #ffeb3b, #ff9800)`;
+                } else if (score <= 80) {
+                    gradient = `linear-gradient(to right, #4caf50, #ffeb3b, #ff9800, #f44336)`;
+                } else {
+                    gradient = `linear-gradient(to right, #4caf50, #ffeb3b, #ff9800, #f44336, #9c27b0)`;
+                }
+                
+                $(this).css({
+                    'width': score + '%',
+                    'background-image': gradient
+                });
+
+                // Set opacity wave animation speed based on score
+                var animationDuration = 6 - (score / 100) * 4; // 6s at 0%, 2s at 100%
+                $(this).find('.opacity-wave').css('animation-duration', animationDuration + 's');
+
+                // Debug information
+                $('#debug-info').html('Score: ' + score.toFixed(2) + '% | Gradient: ' + gradient + 
+                                      ' | Width: ' + score + '% | Wave Speed: ' + animationDuration.toFixed(2) + 's');
+            });
+        }
+
+        // Call the function when the page loads
+        setScoreGradient();
+    });
+		
+		// Add to your JavaScript
+		function updateScreenReaderStatus(message) {
+			let statusRegion = document.getElementById('sr-status');
+			if (!statusRegion) {
+				statusRegion = document.createElement('div');
+				statusRegion.id = 'sr-status';
+				statusRegion.setAttribute('role', 'status');
+				statusRegion.setAttribute('aria-live', 'polite');
+				statusRegion.className = 'visually-hidden';
+				document.body.appendChild(statusRegion);
+			}
+			statusRegion.textContent = message;
+		}
+    </script>
+</body>
+</html>

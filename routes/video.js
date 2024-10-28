@@ -132,6 +132,37 @@ router.post('/upload', authMiddleware.requireAuth, upload.single('video'), async
 });
 
 // This route requires authentication
+router.get('/viewScore/:videoId', authMiddleware.requireAuth, async (req, res) => {
+    try {
+        //const video = await models.Video.findByPk(req.params.videoId);
+		
+		const video = await models.Video.findOne({
+            where: { id: req.params.videoId },
+			include: [
+				{ model: models.User, as: 'student', attributes: ['email'] },
+				{ model: models.User, as: 'teacher', attributes: ['email'] },
+				{ 
+					model: models.Room, 
+					as: 'room',
+					attributes: ['uniqueIdentifier']
+				}
+			]
+        });
+		
+        if (!video) {
+            return res.status(404).json({ error: 'Video not found' });
+        }
+		res.render('view-score', { 
+				title: 'Video Score',
+				video: video
+		});
+	  } catch (error) {
+        console.error('Error viewing video score:', error);
+        res.status(500).json({ error: 'An error occurred while viewing video score' });
+    }	
+});
+
+// This route requires authentication
 router.get('/:videoId/status', authMiddleware.requireAuth, async (req, res) => {
     try {
         const video = await models.Video.findByPk(req.params.videoId);
@@ -140,6 +171,9 @@ router.get('/:videoId/status', authMiddleware.requireAuth, async (req, res) => {
         }
         res.json({
             processingStatus: video.processingStatus,
+			transcription: video.transcription,
+			scoringStatus: video.scoringStatus,
+			scoreData: video.scoreData,
             filePath: video.filePath
         });
     } catch (error) {
