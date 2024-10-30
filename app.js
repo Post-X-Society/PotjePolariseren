@@ -59,6 +59,10 @@ app.get('/', (req, res) => {
     res.render('index', { title: 'Potje Polariseren' });
 });
 
+app.get('/over', (req, res) => {
+    res.render('over', { title: 'Over Potje Polariseren' });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);

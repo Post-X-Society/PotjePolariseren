@@ -39,7 +39,7 @@ class RoomService {
       throw new Error('Potje niet gevonden');
     }
     if (room.pinCode !== pinCode) {
-      throw new Error('Onjuiste pin code');
+      throw new Error('Onjuiste PIN code');
     }
     if (room.expiresAt < new Date()) {
       throw new Error('Sessie is verlopen');

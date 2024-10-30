@@ -1,120 +1,292 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <%- include('partials/head') %>
     <style>
-		#uploadForm {
-			background: white;
-			padding: 1em;
-		}
-        .video-item {
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-			background: white;
-        }
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
-        }
-		.video-container {
-			position: relative;
-			padding-bottom: 56.25%; /* 16:9 aspect ratio */
-			height: 0;
-			overflow: hidden;
-		}
-		.video-container video {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-		}
-		.processing-message, .error-message {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background-color: #f8f9fa;
-			border: 1px solid #dee2e6;
-		}
+:root {
+    --primary-text: #000000;
+    --secondary-text: #ffffff;
+    --accent-color: #EE72F8;
+    --error-color: #dc3545;
+    --success-color: #28a745;
+    --info-color: #17a2b8;
+    --border-color: #ddd;
+    --focus-outline: #4A90E2;
+    --background-white: #ffffff;
+}
+
+/* Base Layout */
+.container {
+    margin-top: 1.5rem;
+}
+
+/* Page Header */
+.page-header {
+    background-color: var(--background-white);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0;
+}
+
+.page-header h1 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-text);
+}
+
+.expiry-date {
+    color: var(--primary-text);
+    margin-bottom: 0;
+    background-color: var(--background-white);
+    padding: 0.5rem 1rem;
+}
+
+/* Card Styles */
+.card {
+    border-radius: 0;
+    background-color: var(--background-white);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: var(--primary-text);
+    color: var(--secondary-text);
+    border-radius: 0;
+    padding: 1rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* Upload Form */
+.upload-form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.upload-form-label {
+    width: 100px;
+    text-align: right;
+    padding-right: 1rem;
+    color: var(--primary-text);
+}
+
+.upload-form-input {
+    flex-grow: 1;
+}
+
+/* Custom File Input */
+.custom-file-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.custom-file-input:focus ~ .custom-file-label {
+    border-color: var(--focus-outline);
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+/* Progress Bar */
+#uploadProgressBar {
+    margin-top: 1rem;
+    height: 1.5rem;
+}
+
+/* Video Items */
+.video-item {
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-white);
+    border-radius: 0;
+}
+
+.video-title {
+    background-color: var(--primary-text);
+    color: var(--secondary-text);
+    padding: 10px;
+    margin: 0;
+}
+
+.video-content {
+    padding: 10px;
+}
+
+/* Video Container */
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    background-color: var(--background-white);
+}
+
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Status Messages */
+.processing-message, 
+.error-message {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background-white);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    text-align: center;
+}
+
+.processing-message {
+    color: #856404;
+    background-color: #fff3cd;
+}
+
+.error-message {
+    color: var(--error-color);
+    background-color: #f8d7da;
+}
+
+/* Score Container */
+.score-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    background-color: var(--background-white);
+}
+
+.score {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: var(--primary-text);
+}
+
+/* Transcription */
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Modal */
+.modal-dialog {
+    max-width: 80%;
+}
+
+.modal-content {
+    border-radius: 0;
+    background-color: var(--background-white);
+}
+
+.modal-header {
+    background-color: var(--primary-text);
+    color: var(--secondary-text);
+    border-radius: 0;
+}
+
+/* Section Headers */
+.section-header {
+    background-color: var(--background-white);
+    padding: 1rem;
+    margin: 1.5rem 0;
+    border-radius: 0;
+}
+
+/* Focus States */
+:focus {
+    outline: 3px solid var(--focus-outline);
+    outline-offset: 2px;
+}
+
+/* Buttons */
+.btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem 1rem;
+}
+
+.btn-sm {
+    min-height: 35px;
+    min-width: 35px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .upload-form-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .upload-form-label {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-dialog {
+        max-width: 95%;
+        margin: 1rem auto;
+    }
+
+    .score-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* High Contrast Mode */
+@media (forced-colors: active) {
+    .card,
+    .video-item,
+    .btn {
+        border: 1px solid currentColor;
+    }
+}
 		
-		/* New styles for upload form */
-        .card {
-            border-radius: 0;
-        }
-        .card-header {
-            background-color: black;
-            color: white;
-            border-radius: 0;
-        }
-        .card-body {
-            padding-top: 1.25rem;
-        }
-        .upload-form-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        .upload-form-label {
-            width: 100px;
-            text-align: right;
-            padding-right: 1rem;
-        }
-        .upload-form-input {
-            flex-grow: 1;
-        }
-        #uploadProgressBar {
-            margin-top: 1rem;
-        }
-		
-		.card, .video-item {
-            border-radius: 0;
-        }
-        .video-item {
-            margin-bottom: 20px;
-            padding: 0;
-            border: 1px solid #ddd;
-            background: white;
-        }
-        .video-title {
-            background-color: black;
-            color: white;
-            padding: 10px;
-            margin: 0;
-        }
-        .video-content {
-            padding: 10px;
-        }
-        .score-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            margin-bottom: 10px;
-        }
-        .score {
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-        .truncate {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
+		.processing-score {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 1rem;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.processing-score .processing-message {
+    position: static;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+}
     </style>
 </head>
 <body>
     <%- include('partials/header') %>
     <div class="container mt-4">
-        <h1>Potje:  <%= room.uniqueIdentifier.slice(0, 4).toUpperCase() %>-<%= room.uniqueIdentifier.slice(4).toUpperCase() %></h1>
-		<p>Video's worden automatisch verwijderd op: <%= new Date(room.expiresAt).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam', day: '2-digit', month: '2-digit', year: '2-digit'}).replace(/\//g, '-') %></p>
+		<div class="page-header">
+			<h2>Potje ID:  <%= room.uniqueIdentifier.slice(0, 4).toUpperCase() %>-<%= room.uniqueIdentifier.slice(4).toUpperCase() %></h2>
+			<p class="expiry-date">Video's worden automatisch verwijderd op: <%= new Date(room.expiresAt).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam', day: '2-digit', month: '2-digit', year: '2-digit'}).replace(/\//g, '-') %></p>
+		</div>
         <% if (locals.error) { %>
             <div class="alert alert-danger"><%= error %></div>
         <% } %>
@@ -125,8 +297,8 @@
         <!-- Updated upload form -->
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="card-title mb-0">Upload een video</h5>
-            </div>
+				<h1 id="uploadFormTitle" class="card-title mb-0">Upload een video</h1>
+			</div>
             <div class="card-body">
                 <form id="uploadForm" enctype="multipart/form-data">
                     <div class="upload-form-row">
@@ -140,7 +312,13 @@
                         <div class="upload-form-input">
                             <div class="input-group">
                                 <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="video" name="video" accept="video/*" required>
+                                    <input type="file" 
+									   class="custom-file-input" 
+									   id="video" 
+									   name="video" 
+									   accept="video/*" 
+									   required
+									   aria-label="Kies video bestand">
                                     <label class="custom-file-label" for="video">Kies bestand</label>
                                 </div>
                             </div>
@@ -160,7 +338,9 @@
             </div>
         </div>
         
-        <h2 class="mt-4">Jouw Video's</h2>
+		<div class="section-header">
+        	<h2>Jouw Video's</h2>
+		</div>
         <% if (videos.length === 0) { %>
             <p>Je hebt nog geen video's geupload.</p>
         <% } else { %>
@@ -225,7 +405,12 @@
     </div>
 
     <!-- Transcript Modal -->
-    <div class="modal fade" id="transcriptModal" tabindex="-1" role="dialog" aria-labelledby="transcriptModalLabel" aria-hidden="true">
+    <div class="modal fade" 
+     id="transcriptModal" 
+     tabindex="-1" 
+     role="dialog" 
+     aria-labelledby="transcriptModalLabel" 
+     aria-modal="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -245,90 +430,171 @@
 	
 <script>
 $(document).ready(function() {
-    // Add this to update the file input label with the selected filename
-	$('.custom-file-input').on('change', function() {
-		var fileName = $(this).val().split('\\').pop();
-		$(this).next('.custom-file-label').html(fileName);
-	});
-
-	// Modify the upload form submission to show/hide the progress bar
-	$('#uploadForm').on('submit', function(e) {
-		e.preventDefault();
-		var formData = new FormData(this);
-
-		$.ajax({
-			xhr: function() {
-				var xhr = new window.XMLHttpRequest();
-				xhr.upload.addEventListener("progress", function(evt) {
-					if (evt.lengthComputable) {
-						var percentComplete = evt.loaded / evt.total;
-						percentComplete = parseInt(percentComplete * 100);
-						$('#uploadProgressBar').show().find('.progress-bar')
-							.width(percentComplete + '%')
-							.attr('aria-valuenow', percentComplete)
-							.text(percentComplete + '%');
-					}
-				}, false);
-				return xhr;
-			},
-			url: '/videos/upload',
-			type: 'POST',
-			data: formData,
-			processData: false,
-			contentType: false,
-			beforeSend: function() {
-				$('#uploadProgressBar').show();
-			},
-			success: function(response) {
-				alert('Video is geupload!');
-				location.reload();
-			},
-			error: function(xhr, status, error) {
-				alert('Upload mislukt: ' + error);
-			},
-			complete: function() {
-				$('#uploadProgressBar').hide();
-			}
-		});
-	});
-
-    // Function to check conversion status for .mov files
-    function checkConversionStatus(videoId) {
-        $.get('/videos/' + videoId + '/conversion-status', function(data) {
-            if (data.conversionStatus === 'completed') {
-                location.reload(); // Reload the page to show the converted video
-            } else if (data.conversionStatus === 'failed') {
-                alert('Video conversie mislukt. Probeer het opnieuw.');
-            } else {
-                // If still converting, check again after 5 seconds
-                setTimeout(function() { checkConversionStatus(videoId); }, 5000);
-            }
+	// Add this snippet to handle page refresh on back navigation
+    window.addEventListener('pageshow', function(event) {
+        // Check if navigating back via browser history
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            // Refresh the page
+            window.location.reload();
+        }
+    });
+	
+    // Function declarations
+    function bindTranscriptClickHandlers() {
+        $(document).off('click', '.view-transcript').on('click', '.view-transcript', function() {
+            var transcription = decodeURIComponent($(this).data('transcription'));
+            $('#transcriptModalBody').text(transcription);
+            $('#transcriptModal').modal('show');
         });
     }
 
-    // Handle editing for title, comment, and transcription
-    $('.video-title, .video-comment').each(function() {
-        makeEditable($(this), $(this).data('video-id'), $(this).attr('class').split(' ')[0].split('-')[1]);
-    });
+function checkVideoStatus(videoId) {
+    $.get('/videos/' + videoId + '/status', function(data) {
+        var videoItem = $(`.video-container[data-video-id="${videoId}"]`);
+        var videoParent = videoItem.closest('.video-content');
+        
+        // Update video and transcript if not already done
+        if (!videoItem.find('video').length) {
+            if (data.processingStatus === 'completed') {
+                videoItem.html(`
+                    <video controls class="img-fluid">
+                        <source src="/videos/stream/${data.filePath}" type="video/mp4">
+                        Your browser does not support the video tag or the video format.
+                    </video>
+                `);
 
-    // Handle video deletion
-    $('.delete-video').on('click', function() {
-        var videoId = $(this).data('video-id');
-        if (confirm('Weet je zeker dat je deze video wilt verwijderen?')) {
-            $.ajax({
-                url: '/videos/' + videoId,
-                type: 'DELETE',
-                success: function(result) {
-                    $('[data-video-id="' + videoId + '"]').closest('.col-md-6').remove();
-                },
-                error: function(xhr, status, error) {
-                    alert('An error occurred while deleting the video.');
+                // Update transcription if available
+                if (data.transcription) {
+                    var transcriptionDiv = videoParent.find('.video-transcription');
+                    if (transcriptionDiv.length) {
+                        transcriptionDiv.html(data.transcription.substring(0, 150) + '...');
+                        
+                        // Update or add transcript button
+                        var transcriptButton = videoParent.find('.view-transcript');
+                        if (!transcriptButton.length) {
+                            transcriptionDiv.after(`
+                                <button class="btn btn-primary btn-sm mt-2 view-transcript" 
+                                        data-video-id="${videoId}"
+                                        data-transcription="${encodeURIComponent(data.transcription)}">
+                                    <i class="fa-solid fa-file"></i> Bekijk volledige transcriptie
+                                </button>
+                            `);
+                            bindTranscriptClickHandlers();
+                        }
+                    }
                 }
-            });
+            } else if (data.processingStatus === 'failed') {
+                videoItem.html(`
+                    <div class="error-message">
+                        <p>Het verwerken van de video is mislukt. Probeer het opnieuw</p>
+                    </div>
+                `);
+            }
+        }
+
+        // Always check and update score status
+        var existingScore = videoParent.find('.score-container');
+
+        if (data.scoringStatus === 'completed' && data.scoreData) {
+            // Remove any existing score container
+            existingScore.remove();
+            
+            const scoreData = typeof data.scoreData === 'string' ? JSON.parse(data.scoreData) : data.scoreData;
+            const sum = Object.values(scoreData).reduce((acc, category) => acc + category.score, 0);
+            const percentage = (sum / 30) * 100;
+
+            videoItem.after(`
+                <div class="score-container">
+                    <span class="score">Polarisatie score: ${percentage.toFixed(0)}%</span>
+                    <a href="/videos/viewScore/${videoId}" class="btn btn-info btn-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i> Bekijk details
+                    </a>
+                </div>
+            `);
+        } else {
+            // Only show processing message if no score container exists
+            if (!existingScore.length) {
+                videoItem.after(`
+                    <div class="score-container processing-score">
+                        <div class="processing-message">
+                            Scoring kan enkele minuten duren...
+                        </div>
+                    </div>
+                `);
+            }
+        }
+
+        // Continue checking if either video is still processing or scoring is not complete
+        const isVideoProcessing = data.processingStatus !== 'completed' && data.processingStatus !== 'failed';
+        const isScoringProcessing = data.scoringStatus !== 'completed' && data.scoringStatus !== 'failed';
+
+        if (isVideoProcessing || isScoringProcessing) {
+            setTimeout(() => checkVideoStatus(videoId), 5000);
         }
     });
+}
 
-    // Function to make elements editable
+// Start checking status for videos that are processing
+$('.video-container').each(function() {
+    var videoId = $(this).data('video-id');
+    var hasProcessingMessage = $(this).find('.processing-message').length > 0;
+    
+    if (videoId && hasProcessingMessage) {
+        checkVideoStatus(videoId);
+    }
+});
+
+    // Event Bindings
+    bindTranscriptClickHandlers();
+
+    // File input label update
+    $('.custom-file-input').on('change', function() {
+        var fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').html(fileName);
+    });
+
+    // Upload form submission
+    $('#uploadForm').on('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+
+        $.ajax({
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener("progress", function(evt) {
+                    if (evt.lengthComputable) {
+                        var percentComplete = evt.loaded / evt.total;
+                        percentComplete = parseInt(percentComplete * 100);
+                        $('#uploadProgressBar').show().find('.progress-bar')
+                            .width(percentComplete + '%')
+                            .attr('aria-valuenow', percentComplete)
+                            .text(percentComplete + '%');
+                    }
+                }, false);
+                return xhr;
+            },
+            url: '/videos/upload',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function() {
+                $('#uploadProgressBar').show();
+            },
+            success: function(response) {
+                alert('Video is geupload!');
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                alert('Upload mislukt: ' + error);
+            },
+            complete: function() {
+                $('#uploadProgressBar').hide();
+            }
+        });
+    });
+
+    // Handle editing functionality
     function makeEditable(element, videoId, field) {
         element.off('click').on('click', function(e) {
             e.stopPropagation();
@@ -346,7 +612,7 @@ $(document).ready(function() {
                 var newText = inputElement.val();
                 if (newText !== currentText) {
                     $.ajax({
-                        url: '/videos/' + videoId + '/' + field,
+                        url: `/videos/${videoId}/${field}`,
                         type: 'PUT',
                         data: { [field]: newText },
                         success: function(result) {
@@ -371,18 +637,29 @@ $(document).ready(function() {
             });
         });
     }
-	
-	// View transcript in modal
-    $('.view-transcript').on('click', function() {
-        var transcription = decodeURIComponent($(this).data('transcription'));
-        $('#transcriptModalBody').text(transcription);
-        $('#transcriptModal').modal('show');
+
+    // Initialize editable elements
+    $('.video-title, .video-comment').each(function() {
+        makeEditable($(this), $(this).data('video-id'), $(this).attr('class').split(' ')[0].split('-')[1]);
     });
 
-    $('.video-transcription').on('click', function() {
-        $(this).siblings('.view-transcript').click();
+    // Handle video deletion
+    $(document).on('click', '.delete-video', function() {
+        var videoId = $(this).data('video-id');
+        if (confirm('Weet je zeker dat je deze video wilt verwijderen?')) {
+            $.ajax({
+                url: '/videos/' + videoId,
+                type: 'DELETE',
+                success: function(result) {
+                    $('[data-video-id="' + videoId + '"]').closest('.col-md-6').remove();
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred while deleting the video.');
+                }
+            });
+        }
     });
-	
+
 });
 </script>
 </body>

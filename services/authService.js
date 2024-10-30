@@ -65,7 +65,7 @@ class AuthService {
     try {
       const room = await this.Room.findOne({ where: { uniqueIdentifier: roomId } });
       if (!room) {
-        throw new Error('Onjuist Pojte ID');
+        throw new Error('Onjuist Potje ID');
       }
 
       let student = await this.User.findOne({ where: { email, role: 'student' } });

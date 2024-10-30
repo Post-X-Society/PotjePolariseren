@@ -446,6 +446,73 @@ div.dataTables_wrapper div.dataTables_paginate {
         "order": [[6, "desc"]]
     });
 
+    // Add page visibility handling
+    let hidden, visibilityChange;
+    if (typeof document.hidden !== "undefined") {
+        hidden = "hidden";
+        visibilityChange = "visibilitychange";
+    } else if (typeof document.msHidden !== "undefined") {
+        hidden = "msHidden";
+        visibilityChange = "msvisibilitychange";
+    } else if (typeof document.webkitHidden !== "undefined") {
+        hidden = "webkitHidden";
+        visibilityChange = "webkitvisibilitychange";
+    }
+
+    // Function to reload table data
+    function reloadTableData() {
+        $.ajax({
+            url: window.location.pathname,
+            method: 'GET',
+            success: function(response) {
+                // Parse the HTML response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(response, 'text/html');
+                const newTableBody = $(doc).find('#videosTable tbody').html();
+                
+                // Update the table body
+                table.destroy();
+                $('#videosTable tbody').html(newTableBody);
+                
+                // Reinitialize the DataTable
+                table = $('#videosTable').DataTable({
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Dutch.json"
+                    },
+                    "columnDefs": [
+                        { "orderable": false, "targets": [1, 3, 7] }
+                    ],
+                    "order": [[6, "desc"]]
+                });
+
+                // Rebind event handlers
+                bindTranscriptClickHandlers();
+                bindEditableHandlers();
+                bindDeleteHandlers();
+                checkProcessingVideos();
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to reload table data:', error);
+            }
+        });
+    }
+
+    // Handle page visibility change
+    document.addEventListener(visibilityChange, function() {
+        if (!document[hidden] && performance.navigation.type === 2) {
+            // User has returned to the page via back button
+            reloadTableData();
+        }
+    }, false);
+
+    // Also check when page becomes active
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            // Page was loaded from browser cache (back/forward navigation)
+            reloadTableData();
+        }
+    });
+
     // Function declarations
     function bindTranscriptClickHandlers() {
         $(document).off('click', '.view-transcript').on('click', '.view-transcript', function() {
@@ -454,84 +521,9 @@ div.dataTables_wrapper div.dataTables_paginate {
             $('#transcriptModal').modal('show');
         });
     }
-		
-	// Reinitialize DataTable after any content changes
-		function reinitializeDataTable() {
-			table.destroy();
-			table = $('#videosTable').DataTable({
-				"language": {
-					"url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Dutch.json"
-				},
-				"columnDefs": [
-					{ "orderable": false, "targets": [1, 3, 7] }
-				],
-				"order": [[6, "desc"]]
-			});
-		}
 
-    function checkVideoStatus(videoId) {
-        $.get('/videos/' + videoId + '/status', function(data) {
-            var row = $(`tr:has([data-id="${videoId}"])`);
-            var videoCell = row.find('td:eq(1)');
-            var scoreCell = row.find('td:eq(2)');
-            var transcriptCell = row.find('td:eq(3)');
-
-            if (!videoCell.find('video').length) {
-                if (data.processingStatus === 'completed') {
-                    videoCell.html(`
-                        <video class="video-preview" controls>
-                            <source src="/videos/stream/${data.filePath}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    `);
-
-                    if (data.transcription) {
-                        transcriptCell.html(`
-                            <button class="btn btn-primary btn-sm view-transcript" 
-                                    data-id="${videoId}"
-                                    data-transcription="${encodeURIComponent(data.transcription)}"
-                                    aria-label="Bekijk transcript">
-                                <i class="fa-solid fa-file" aria-hidden="true"></i> Bekijk
-                            </button>
-                        `);
-                    }
-                } else if (data.processingStatus === 'failed') {
-                    videoCell.html('<div class="error-message">Verwerkings error</div>');
-                }
-            }
-
-            if (!scoreCell.find('.badge').length) {
-                if (data.scoringStatus === 'completed' && data.scoreData) {
-                    const scoreData = typeof data.scoreData === 'string' ? JSON.parse(data.scoreData) : data.scoreData;
-                    const sum = Object.values(scoreData).reduce((acc, category) => acc + category.score, 0);
-                    const percentage = (sum / 30) * 100;
-
-                    scoreCell.html(`
-                        <p><span class="badge rounded-pill"><span class="display-4">${percentage.toFixed(0)}%</span></span></p>
-                        <a href="/videos/viewScore/${videoId}"><button class="btn btn-info btn-sm view-video-score"><i class="fa-solid fa-magnifying-glass"></i> Bekijk</button></a>
-                    `);
-                } else if (data.processingStatus === 'processing' || data.processingStatus === 'pending_transcription' || data.processingStatus === 'transcribing') {
-                    scoreCell.html('<div class="processing-message">Wacht op transcriptie...</div>');
-                } else if (data.scoringStatus === 'processing' || data.scoringStatus === 'pending' || data.scoringStatus === '') {
-                    scoreCell.html('<div class="processing-message">Video wordt gescoord...</div>');
-                }
-            }
-
-            const isVideoProcessing = data.processingStatus !== 'completed' && data.processingStatus !== 'failed';
-            const isScoringProcessing = data.scoringStatus !== 'completed' && data.scoringStatus !== 'failed';
-            const hasProcessingMessage = row.find('.processing-message').length > 0;
-
-            if ((isVideoProcessing || isScoringProcessing) && hasProcessingMessage) {
-                setTimeout(function() { checkVideoStatus(videoId); }, 5000);
-            }
-        });
-    }
-
-    // Event Bindings
-    bindTranscriptClickHandlers();
-		
-        // Make content editable
-        $('.editable').on('click', function(e) {
+    function bindEditableHandlers() {
+        $('.editable').off('click').on('click', function(e) {
             e.stopPropagation();
             var element = $(this);
             var type = element.data('type');
@@ -571,87 +563,153 @@ div.dataTables_wrapper div.dataTables_paginate {
                 }
             });
         });
+    }
 
-        // Modify the video deletion handler
-		$('.delete-video').on('click', function() {
-			var videoId = $(this).data('id');
-			var table = $('#videosTable').DataTable(); // Get DataTable instance
-			var row = $(this).closest('tr'); // Get the row to be deleted
+    function bindDeleteHandlers() {
+        $('.delete-video').off('click').on('click', function() {
+            var videoId = $(this).data('id');
+            var row = $(this).closest('tr');
 
-			if (confirm('Weet je zeker dat je deze video wilt verwijderen?')) {
-				$.ajax({
-					url: `/videos/${videoId}`,
-					method: 'DELETE',
-					success: function() {
-						// Remove the row from DataTable and redraw
-						table
-							.row(row)
-							.remove()
-							.draw();
-					},
-					error: function() {
-						alert('Failed to delete the video. Please try again.');
-					}
-				});
-			}
-		});
-		
-		// Add this to update the file input label with the selected filename
-        $('.custom-file-input').on('change', function() {
-            var fileName = $(this).val().split('\\').pop();
-            $(this).next('.custom-file-label').html(fileName);
+            if (confirm('Weet je zeker dat je deze video wilt verwijderen?')) {
+                $.ajax({
+                    url: `/videos/${videoId}`,
+                    method: 'DELETE',
+                    success: function() {
+                        table
+                            .row(row)
+                            .remove()
+                            .draw();
+                    },
+                    error: function() {
+                        alert('Failed to delete the video. Please try again.');
+                    }
+                });
+            }
         });
+    }
 
-        // Modify the upload form submission to show/hide the progress bar
-        $('#uploadForm').on('submit', function(e) {
-            e.preventDefault();
-            var formData = new FormData(this);
+    function checkVideoStatus(videoId) {
+        $.get('/videos/' + videoId + '/status', function(data) {
+            var row = $(`tr:has([data-id="${videoId}"])`);
+            var videoCell = row.find('td:eq(1)');
+            var scoreCell = row.find('td:eq(2)');
+            var transcriptCell = row.find('td:eq(3)');
 
-            $.ajax({
-                url: '/videos/upload',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                xhr: function() {
-                    var xhr = new window.XMLHttpRequest();
-                    xhr.upload.addEventListener("progress", function(evt) {
-                        if (evt.lengthComputable) {
-                            var percentComplete = evt.loaded / evt.total;
-                            percentComplete = parseInt(percentComplete * 100);
-                            $('#uploadProgressBar').show().find('.progress-bar')
-                                .width(percentComplete + '%')
-                                .attr('aria-valuenow', percentComplete)
-                                .text(percentComplete + '%');
-                        }
-                    }, false);
-                    return xhr;
-                },
-                beforeSend: function() {
-                    $('#uploadProgressBar').show();
-                },
-                success: function(response) {
-                    alert('Video is geupload!');
-                    location.reload();
-                },
-                error: function(xhr, status, error) {
-                    alert('Error: uploaden niet gelukt');
-                    console.error(error);
-                },
-                complete: function() {
-                    $('#uploadProgressBar').hide();
+            if (!videoCell.find('video').length) {
+                if (data.processingStatus === 'completed') {
+                    videoCell.html(`
+                        <video class="video-preview" controls>
+                            <source src="/videos/stream/${data.filePath}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    `);
+
+                    if (data.transcription) {
+                        transcriptCell.html(`
+                            <button class="btn btn-primary btn-sm view-transcript" 
+                                    data-id="${videoId}"
+                                    data-transcription="${encodeURIComponent(data.transcription)}"
+                                    aria-label="Bekijk transcript">
+                                <i class="fa-solid fa-file" aria-hidden="true"></i> Bekijk
+                            </button>
+                        `);
+                        bindTranscriptClickHandlers();
+                    }
+                } else if (data.processingStatus === 'failed') {
+                    videoCell.html('<div class="error-message">Verwerkings error</div>');
                 }
-            });
+            }
+
+            if (!scoreCell.find('.badge').length) {
+                if (data.scoringStatus === 'completed' && data.scoreData) {
+                    const scoreData = typeof data.scoreData === 'string' ? JSON.parse(data.scoreData) : data.scoreData;
+                    const sum = Object.values(scoreData).reduce((acc, category) => acc + category.score, 0);
+                    const percentage = (sum / 30) * 100;
+
+                    scoreCell.html(`
+                        <p><span class="badge rounded-pill"><span class="display-4">${percentage.toFixed(0)}%</span></span></p>
+                        <a href="/videos/viewScore/${videoId}"><button class="btn btn-info btn-sm view-video-score"><i class="fa-solid fa-magnifying-glass"></i> Bekijk</button></a>
+                    `);
+                } else if (data.processingStatus === 'processing' || data.processingStatus === 'pending_transcription' || data.processingStatus === 'transcribing') {
+                    scoreCell.html('<div class="processing-message">Wacht op transcriptie...</div>');
+                } else if (data.scoringStatus === 'processing' || data.scoringStatus === 'pending' || data.scoringStatus === '') {
+                    scoreCell.html('<div class="processing-message">Video wordt gescoord...</div>');
+                }
+            }
+
+            const isVideoProcessing = data.processingStatus !== 'completed' && data.processingStatus !== 'failed';
+            const isScoringProcessing = data.scoringStatus !== 'completed' && data.scoringStatus !== 'failed';
+            const hasProcessingMessage = row.find('.processing-message').length > 0;
+
+            if ((isVideoProcessing || isScoringProcessing) && hasProcessingMessage) {
+                setTimeout(function() { checkVideoStatus(videoId); }, 5000);
+            }
         });
-		
-		// Check processing videos
-		$('tr:has(.processing-message)').each(function() {
-			var videoId = $(this).find('[data-id]').data('id');
-			if (videoId) {
-				checkVideoStatus(videoId);
-			}
-		});
+    }
+
+    function checkProcessingVideos() {
+        $('tr:has(.processing-message)').each(function() {
+            var videoId = $(this).find('[data-id]').data('id');
+            if (videoId) {
+                checkVideoStatus(videoId);
+            }
+        });
+    }
+
+    // File input label update
+    $('.custom-file-input').on('change', function() {
+        var fileName = $(this).val().split('\\').pop();
+        $(this).next('.custom-file-label').html(fileName);
     });
+
+    // Upload form submission
+    $('#uploadForm').on('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: '/videos/upload',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener("progress", function(evt) {
+                    if (evt.lengthComputable) {
+                        var percentComplete = evt.loaded / evt.total;
+                        percentComplete = parseInt(percentComplete * 100);
+                        $('#uploadProgressBar').show().find('.progress-bar')
+                            .width(percentComplete + '%')
+                            .attr('aria-valuenow', percentComplete)
+                            .text(percentComplete + '%');
+                    }
+                }, false);
+                return xhr;
+            },
+            beforeSend: function() {
+                $('#uploadProgressBar').show();
+            },
+            success: function(response) {
+                alert('Video is geupload!');
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                alert('Error: uploaden niet gelukt');
+                console.error(error);
+            },
+            complete: function() {
+                $('#uploadProgressBar').hide();
+            }
+        });
+    });
+
+    // Initial bindings
+    bindTranscriptClickHandlers();
+    bindEditableHandlers();
+    bindDeleteHandlers();
+    checkProcessingVideos();
+});
     </script>
 </body>
 </html>
