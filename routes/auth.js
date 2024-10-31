@@ -85,6 +85,30 @@ router.post('/register', async (req, res) => {
   }
 });
 
+//Retrieve credentials
+router.get('/retrieve-credentials', (req, res) => {
+  res.render('retrieve-credentials', { 
+    title: 'Inloggegevens opvragen'
+  });
+});
+
+router.post('/retrieve-credentials', async (req, res) => {
+  try {
+    const { email } = req.body;
+    await authService.retrieveRoomCredentials(email);
+    res.render('retrieve-credentials', { 
+      title: 'Inloggegevens opvragen', 
+      success: 'Als er potjes zijn gevonden voor dit e-mailadres, dan ontvang je de inloggegevens in je inbox.'
+    });
+  } catch (error) {
+    console.error('Credential retrieval error:', error);
+    res.render('retrieve-credentials', { 
+      title: 'Inloggegevens opvragen', 
+      error: error.message || 'Er is een onverwachte fout opgetreden'
+    });
+  }
+});
+
 // Protected route
 router.get('/logout', authMiddleware.requireAuth, (req, res) => {
   res.clearCookie('token');
