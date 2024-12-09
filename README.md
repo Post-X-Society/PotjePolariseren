@@ -64,5 +64,11 @@ The application include a maintenance script:
 Automatically removes expired rooms and their associated content:
 ```node scripts/cleanupExpiredRooms.js```
 
+## Contribution
+There are no specific guidelines for contributing to this project, feel free to modify as you please and suggest features or changes.
+
+## License
+This project is published under the GNU Affero General Public License v3 (AGPL-3.0) with an additional patent protection clause. This combines the strong copyleft protection of GPL with explicit patent protection.
+
 ## Met dank aan
 Dit lespakket is ontwikkeld door Stichting Post-X Society, Nationaal Instituut Beeld & Geluid en het Albeda College, dankzij financiering door het SIDN Fonds.
