@@ -68,7 +68,22 @@ Automatically removes expired rooms and their associated content:
 There are no specific guidelines for contributing to this project, feel free to modify as you please and suggest features or changes.
 
 ## License
-This project is published under the GNU Affero General Public License v3 (AGPL-3.0) with an additional patent protection clause. This combines the strong copyleft protection of GPL with explicit patent protection.
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) with additional patent protection. This means:
+
+- You must disclose source code when distributing the software
+- Modifications must be released under the same license
+- Changes must be documented
+- Users who interact with the software over a network must be able to receive the source code
+- Includes explicit patent protection clause
+
+Full license text can be found in the [LICENSE](LICENSE) file.
+Additional patent rights can be found in the [PATENT](PATENT) file.
+
+This license was chosen to ensure:
+- The software remains free and open source
+- Modifications and derivative works benefit the community
+- Users are protected from patent claims
+- Network use triggers distribution requirements
 
 ## Met dank aan
 Dit lespakket is ontwikkeld door Stichting Post-X Society, Nationaal Instituut Beeld & Geluid en het Albeda College, dankzij financiering door het SIDN Fonds.
