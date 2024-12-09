@@ -10,6 +10,10 @@ De Potje Polariseren tool is onderdeel van een lespakket over polarisatie in MBO
 
 Meer informatie: [https://www.postxsociety.org/lespakket-polarisatie/]
 
+## Contact
+Voor vragen of suggesties, neem contact op met Post-X Society [mail@postxsociety.org](https://www.postxsociety.org/over-ons/contact/)
+
+# Technical documentation
 De technische documentatie is verder in het Engels:
 
 ## Application Features
@@ -61,4 +65,4 @@ Automatically removes expired rooms and their associated content:
 ```node scripts/cleanupExpiredRooms.js```
 
 ## Met dank aan
-Dit lespakket is ontwikkeld door Stichting Post-X Society, Nationaal Instituut Beeld & Geluid en het Albeda College
+Dit lespakket is ontwikkeld door Stichting Post-X Society, Nationaal Instituut Beeld & Geluid en het Albeda College, dankzij financiering door het SIDN Fonds.
