@@ -1,20 +1,27 @@
 const Queue = require('bull');
-const ScoringService = require('./scoringService');
 const { models } = require('../database');
+const emailService = require('../services/emailService');
 
 const scoringQueue = new Queue('scoring', process.env.REDIS_URL);
 
 scoringQueue.process(async (job) => {
     const { videoId } = job.data;
+    console.log(`Processing scoring job for video ${videoId}`);
 
     try {
-        const scoringService = new ScoringService(models.Video);
+        // Import ScoringService here to avoid circular dependencies
+        const ScoringService = require('../services/scoringService');
+        const scoringService = new ScoringService(models.Video, emailService);
+        
         await scoringService.scoreTranscription(videoId);
         console.log(`Scoring completed for video ${videoId}`);
     } catch (error) {
         console.error(`Error scoring video ${videoId}:`, error);
         // Update video status to 'failed' if scoring fails after retries
-        await models.Video.update({ scoringStatus: 'failed' }, { where: { id: videoId } });
+        await models.Video.update(
+            { scoringStatus: 'failed' }, 
+            { where: { id: videoId } }
+        );
         throw error; // This will trigger the retry mechanism
     }
 });

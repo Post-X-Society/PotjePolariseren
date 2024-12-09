@@ -253,11 +253,14 @@ a:hover {
     <main>
         <div class="centered-content">
             <div class="text-row" id="row1">
-                <p class="h3">Potje bekijken</p>
+                <p class="h3">Potje Beheren</p>
             </div>
             <% if (locals.error) { %>
                 <div class="alert alert-danger" role="alert"><%= error %></div>
             <% } %>
+			<div class="text-row" style="display:block">
+				<p>Inzendingen van jouw studenten beheren? De inloggegevens zijn je toegestuurd na de <a href="/auth/register" aria-label="Registreer een nieuw potje">registratie</a>.</p>
+			</div>
 			<div class="text-row" id="row3">
     <form action="/auth/teacher-login" method="POST" id="loginForm" autocomplete="off">
         <div class="form-group" role="group" aria-labelledby="potjeId-label">

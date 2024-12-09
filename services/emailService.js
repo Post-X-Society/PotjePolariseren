@@ -69,6 +69,57 @@ class EmailService {
     }
   }
 	
+	async sendScoringCompleteEmail(to, videoId, videoTitle, scoreData, roomIdentifier) {
+    const scorePercentage = Object.values(scoreData)
+      .reduce((acc, category) => acc + category.score, 0) / 30 * 100;
+    
+    const baseUrl = process.env.BASE_URL || 'https://polariseren.postxsociety.cloud';
+    const scoreUrl = `${baseUrl}/videos/viewScore/${videoId}`;
+
+    const mailOptions = {
+      from: process.env.SMTP_USER,
+      to: to,
+      subject: 'Video score beschikbaar - Potje Polariseren',
+      text: `
+Je video "${videoTitle}" is geanalyseerd!
+
+Polarisatie Score: ${scorePercentage.toFixed(0)}%
+
+Bekijk de gedetailleerde score hier:
+${scoreUrl}
+
+Dit bericht is automatisch verzonden door Potje Polariseren.`,
+      html: `
+        <h1>Je video is geanalyseerd!</h1>
+        <p>De analyse van je video "${videoTitle}" is voltooid.</p>
+        
+        <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 4px;">
+          <p><strong>Polarisatie Score:</strong> ${scorePercentage.toFixed(0)}%</p>
+        </div>
+
+        <p>
+          <a href="${scoreUrl}" 
+             style="display: inline-block; padding: 10px 20px; background-color: #EE72F8; color: white; text-decoration: none; border-radius: 4px;">
+            Bekijk gedetailleerde score
+          </a>
+        </p>
+
+        <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
+          Dit bericht is automatisch verzonden door Potje Polariseren.
+        </p>
+      `
+    };
+
+    try {
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('Score notification email sent:', info.response);
+      return info;
+    } catch (error) {
+      console.error('Error sending score notification email:', error);
+      throw error;
+    }
+  }
+	
   async sendConsolidatedRoomCredentials(to, groupedRooms) {
     console.log(`[sendConsolidatedRoomCredentials] Starting to send email to: ${to}`);
     console.log(`[sendConsolidatedRoomCredentials] Number of teacher accounts: ${Object.keys(groupedRooms).length}`);

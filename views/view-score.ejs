@@ -366,6 +366,22 @@ button:focus,
         -webkit-print-color-adjust: exact;
     }
 }
+		
+		.criterium0 .card-header{
+			background-color: #f22F84 !important;
+		}
+		
+		.criterium1 .card-header{
+			background-color: #3e4be4 !important;
+		}
+		
+		.criterium2 .card-header{
+			background-color: #01be9d !important;
+		}
+		
+		.criterium3 .card-header{
+			background-color: #ed7d31 !important;
+		}
     </style>
 </head>
 <body>
@@ -374,13 +390,13 @@ button:focus,
 	</a>
     <%- include('partials/header') %>
     <main class="centered-content">
-		<a href="javascript:history.back()" class="back-link">&larr; Terug</a>
+		<a href="/rooms/<%= room.uniqueIdentifier %>" class="back-link">&larr; Terug</a>
 		
         <div class="content-row video-details">
             <h1><%= video.title %></h1>
             <p class="video-info">
                 ID: <%= video.id %> | 
-                Created by: 
+                Geupload door: 
                 <% if (video.student) { %>
                     <%= video.student.email %> (Student)
                 <% } else if (video.teacher) { %>
@@ -388,7 +404,7 @@ button:focus,
                 <% } else { %>
                     Unknown
                 <% } %>
-                | Created at: <%= new Date(video.createdAt).toLocaleString('nl-NL', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) %>
+                | Datum: <%= new Date(video.createdAt).toLocaleString('nl-NL', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) %>
             </p>
         </div>
 
@@ -488,7 +504,7 @@ button:focus,
                             <% if (cardCount === 4) { %>
                                 <div class="divider"><hr></div>
                             <% } %>
-                            <div class="indicator-card card <%= cardCount < 4 ? 'dark-header' : '' %>">
+                            <div class="indicator-card card <%= cardCount < 4 ? 'dark-header' : '' %> criterium<%= cardCount %>">
                                 <div class="card-header">
                                     <h4><%= titleMapping[indicator] %>: <%= scoreData[indicator].score %></h4>
                                 </div>

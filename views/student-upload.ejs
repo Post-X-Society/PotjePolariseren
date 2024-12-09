@@ -429,6 +429,14 @@
 	
 	
 <script>
+// Constants for validation (matching backend)
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
+const ALLOWED_VIDEO_EXTENSIONS = [
+    '.mp4', '.mov', '.avi', '.mkv', '.mpeg', 
+    '.mpg', '.m2v', '.m4v', '.3gp', '.wmv', 
+    '.flv', '.webm', '.ts', '.mts', '.ogv'
+];
+
 $(document).ready(function() {
 	// Add this snippet to handle page refresh on back navigation
     window.addEventListener('pageshow', function(event) {
@@ -553,45 +561,117 @@ $('.video-container').each(function() {
         $(this).next('.custom-file-label').html(fileName);
     });
 
+	// File input validation
+    $('.custom-file-input').on('change', function() {
+        const file = this.files[0];
+        const fileInput = $(this);
+        const submitButton = $('#uploadForm button[type="submit"]');
+        const feedbackDiv = $('<div class="invalid-feedback"></div>');
+        
+        // Remove any existing feedback
+        fileInput.removeClass('is-invalid is-valid');
+        fileInput.siblings('.invalid-feedback').remove();
+        
+        if (!file) {
+            return;
+        }
+
+        // Update the file label
+        const fileName = file.name;
+        $(this).next('.custom-file-label').html(fileName);
+
+        // Validate file size
+        if (file.size > MAX_FILE_SIZE) {
+            const maxSizeMB = MAX_FILE_SIZE / (1024 * 1024);
+            fileInput.addClass('is-invalid');
+            feedbackDiv.text(`Bestand is te groot. Maximum grootte is ${maxSizeMB}MB`);
+            fileInput.parent().append(feedbackDiv);
+            submitButton.prop('disabled', true);
+            return;
+        }
+
+        // Validate file extension
+        const fileExtension = '.' + fileName.split('.').pop().toLowerCase();
+        if (!ALLOWED_VIDEO_EXTENSIONS.includes(fileExtension)) {
+            fileInput.addClass('is-invalid');
+            feedbackDiv.text(`Ongeldig bestandstype. Toegestane types: ${ALLOWED_VIDEO_EXTENSIONS.join(', ')}`);
+            fileInput.parent().append(feedbackDiv);
+            submitButton.prop('disabled', true);
+            return;
+        }
+
+        // Additional MIME type check
+        if (!file.type.startsWith('video/')) {
+            fileInput.addClass('is-invalid');
+            feedbackDiv.text('Bestand moet een video zijn');
+            fileInput.parent().append(feedbackDiv);
+            submitButton.prop('disabled', true);
+            return;
+        }
+
+        // If all validations pass
+        fileInput.addClass('is-valid');
+        submitButton.prop('disabled', false);
+    });
+	
     // Upload form submission
     $('#uploadForm').on('submit', function(e) {
         e.preventDefault();
-        var formData = new FormData(this);
-
-        $.ajax({
-            xhr: function() {
-                var xhr = new window.XMLHttpRequest();
-                xhr.upload.addEventListener("progress", function(evt) {
-                    if (evt.lengthComputable) {
-                        var percentComplete = evt.loaded / evt.total;
-                        percentComplete = parseInt(percentComplete * 100);
-                        $('#uploadProgressBar').show().find('.progress-bar')
-                            .width(percentComplete + '%')
-                            .attr('aria-valuenow', percentComplete)
-                            .text(percentComplete + '%');
+        const formData = new FormData(this);
+        const file = formData.get('video');
+        
+        // Final validation check before upload
+        if (file && file.size <= MAX_FILE_SIZE && 
+            ALLOWED_VIDEO_EXTENSIONS.includes('.' + file.name.split('.').pop().toLowerCase()) && 
+            file.type.startsWith('video/')) {
+            
+            $.ajax({
+                xhr: function() {
+                    const xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function(evt) {
+                        if (evt.lengthComputable) {
+                            const percentComplete = evt.loaded / evt.total;
+                            const percent = parseInt(percentComplete * 100);
+                            $('#uploadProgressBar').show()
+                                .find('.progress-bar')
+                                .width(percent + '%')
+                                .attr('aria-valuenow', percent)
+                                .text(percent + '%');
+                        }
+                    }, false);
+                    return xhr;
+                },
+                url: '/videos/upload',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    $('#uploadProgressBar').show();
+                    $('button[type="submit"]').prop('disabled', true);
+                },
+                success: function(response) {
+                    alert('Video is geupload!');
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    let errorMessage = 'Upload mislukt: ';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        errorMessage += response.error || error;
+                    } catch (e) {
+                        errorMessage += error;
                     }
-                }, false);
-                return xhr;
-            },
-            url: '/videos/upload',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            beforeSend: function() {
-                $('#uploadProgressBar').show();
-            },
-            success: function(response) {
-                alert('Video is geupload!');
-                location.reload();
-            },
-            error: function(xhr, status, error) {
-                alert('Upload mislukt: ' + error);
-            },
-            complete: function() {
-                $('#uploadProgressBar').hide();
-            }
-        });
+                    alert(errorMessage);
+                    $('button[type="submit"]').prop('disabled', false);
+                },
+                complete: function() {
+                    $('#uploadProgressBar').hide();
+                }
+            });
+        } else {
+            alert('Controleer of het bestand een geldige video is en niet te groot is.');
+        }
     });
 
     // Handle editing functionality

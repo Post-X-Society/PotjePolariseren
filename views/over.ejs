@@ -80,16 +80,15 @@
 			width: 100%;
 			box-shadow: 3px 3px 0 3px var(--accent-color);
 			text-transform: none;
-			display: flex;
+			display: block;
 			justify-content: space-between;
 			align-items: center;
 			transition: transform 0.3s, box-shadow 0.3s;
 			line-height: 1.5;
 		}
-
-		.text-row:hover {
-			transform: translateY(-5px);
-			box-shadow: 3px 3px 0px 3px var(--hover-green);
+		
+		.text-row p {
+			text-align: left;
 		}
 
 		/* Specific rows */
@@ -145,7 +144,7 @@
 
 		/* Link styles */
 		a {
-			color: inherit;
+			color: var(--accent-color);
 			text-decoration: none;
 		}
 
@@ -251,12 +250,20 @@
 				<h2 class="h3">Over Potje Polariseren</h2>
 			</div>
 			<div class="text-row">
-				<p>Deze Polarisatietest is onderdeel van het lespakket "Onverdeeld Online" van Stichting Post-X Society, Nationaal Instituut Beeld & Geluid en Albeda College.</p>
+				<p>Potje Polariseren is een online tool in een <a href="https://www.postxsociety.org/lespakket-polarisatie/" aria-label="Lespakket Polariseren" title="Lespakket Polariseren">lespakket over polarisatie</a>. Bekijk het pakket voor de lesmaterialen, meer informatie over de leerdoelen en instructies voor het gebruik.</p>
 			</div>
-			<div class="text-row mt-5">
-				<p>Dit project heeft als doel om negatieve polarisatie tegen te gaan onder jongeren in het middelbaar beroepsonderwijs in Nederland (MBO). De instrumenten die worden ontwikkeld moedigen deelnemers aan om te doorgronden hoe ideeën en meningen online worden geselecteerd, geframed en gepresenteerd, en hoe dit polarisatie kan beïnvloeden.
-				</p><p>
-Dit project wordt mede mogelijk gemaakt met steun van SIDN fonds. SIDN fonds staat voor een sterk internet voor iedereen. Het fonds ondersteunt projecten met maatschappelijke meerwaarde, die bijdragen aan een sterker internet, sterke internetgebruikers, of die zich richten op de publieke waarden en maatschappelijke kant van het internet. Zie voor meer info: <a href="https://www.sidnfonds.nl" title="SIDN Fonds" alt="SIDN Fonds">https://www.sidnfonds.nl</a></p>
+			<div class="text-row mt-2">
+				<p>Het doel is om negatieve polarisatie tegen te gaan onder jongeren in het middelbaar beroepsonderwijs in Nederland (MBO). Het lespakket gaat over framing en hoe meningen online worden geselecteerd en gepresenteerd, en hoe dit polarisatie kan beïnvloeden.
+				</p>
+			</div>
+				<div class="text-row mt-2">
+					<h2>Hoe werkt deze tool?</h2>
+					<p>Potjes kunnen worden aangemaakt door docenten. <a href="/auth/register" title="Start een potje" aria-label="Start een potje">Registreer een potje</a> en ontvang een unieke Potje ID met bijbehorende PIN code per email. Studenten kunnen met het Potje ID een inloglink aanvragen, die ze per mail ontvangen. Potjes en alle bijbehorende gegevens worden na twee weken automatisch verwijderd.</p>
+			</div>
+					<div class="text-row mt-2">
+						<h2>Met dank aan</h2>
+<p>
+Dit lespakket is gemaakt door <a href="https://www.postxsociety.org">Stichting Post-X Society</a>, <a href="https://www.beeldengeluid.nl/" title="Nationaal Instituut Beeld & Geluid">Nationaal Instituut Beeld & Geluid</a> en <a href="https://www.albeda.nl/" title="Albeda College">Albeda College</a>. Dit is wordt mede mogelijk gemaakt met steun van SIDN fonds. SIDN fonds staat voor een sterk internet voor iedereen. Het fonds ondersteunt projecten met maatschappelijke meerwaarde, die bijdragen aan een sterker internet, sterke internetgebruikers, of die zich richten op de publieke waarden en maatschappelijke kant van het internet. Zie voor meer info: <a href="https://www.sidnfonds.nl" title="SIDN Fonds" alt="SIDN Fonds">https://www.sidnfonds.nl</a></p>
 			</div>
 		</div>
     </main>

@@ -4,6 +4,7 @@ const fs = require('fs');
 const util = require('util');
 const { sequelize, models } = require('./database');
 const authMiddleware = require('./middleware/auth');
+require('./scripts/setupCleanupCron');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -55,8 +56,31 @@ app.use('/auth', authRoutes);
 app.use('/rooms', roomRoutes);
 app.use('/videos', videoRoutes);
 
-app.get('/', (req, res) => {
-    res.render('index', { title: 'Potje Polariseren' });
+app.get('/', async (req, res) => {
+    try {
+        // Fetch room data - adjust query based on your needs
+        // For example, you might want to:
+        // - Show only the logged-in teacher's rooms
+        // - Show only active rooms
+        // - Show the most recent room
+        const room = await models.Room.findOne({
+            where: {
+                teacherId: req.user?.id // Only if user is logged in
+            },
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.render('index', { 
+            title: 'Potje Polariseren',
+            room: room || null // Pass null if no room found
+        });
+    } catch (error) {
+        // console.error('Error fetching room:', error);
+        res.render('index', { 
+            title: 'Potje Polariseren',
+            room: null
+        });
+    }
 });
 
 app.get('/over', (req, res) => {

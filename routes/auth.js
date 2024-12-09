@@ -9,7 +9,7 @@ const authService = new AuthService(models.User, models.Room);
 // Public routes
 router.get('/teacher-login', (req, res) => {
   res.render('teacher-login', { 
-    title: 'Teacher Login',
+    title: 'Potje Beheren',
     roomId: req.query.roomId,
     pinCode: req.query.pinCode
   });

@@ -1,7 +1,9 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const FileType = require('file-type'); // Correct import for version 16.5.3
+const fs = require('fs').promises;
+const fsSync = require('fs');
 const { models } = require('../database');
 const authMiddleware = require('../middleware/auth');
 const videoQueue = require('../services/videoQueue');
@@ -18,6 +20,89 @@ const storage = multer.diskStorage({
         cb(null, uniqueSuffix + path.extname(file.originalname))
     }
 });
+
+// Expanded list of allowed video MIME types
+const ALLOWED_VIDEO_MIMES = [
+    'video/mp4',
+    'video/quicktime',
+    'video/x-msvideo',
+    'video/x-matroska',
+    'video/mpeg',
+    'video/x-ms-wmv',
+    'video/3gpp',
+    'video/x-flv',
+    'video/webm',
+    'video/mpeg-2',
+    'video/mp2t',
+    'video/x-m4v',
+    'video/ogg'
+];
+
+// Expanded list of allowed video extensions
+const ALLOWED_VIDEO_EXTENSIONS = [
+    '.mp4',
+    '.mov',
+    '.avi',
+    '.mkv',
+    '.mpeg',
+    '.mpg',
+    '.m2v',
+    '.m4v',
+    '.3gp',
+    '.wmv',
+    '.flv',
+    '.webm',
+    '.ts',
+    '.mts',
+    '.ogv'
+];
+
+// Maximum file size (in bytes) - e.g., 500MB
+const MAX_FILE_SIZE = 500 * 1024 * 1024;
+
+const validateVideoUpload = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        // Check file size
+        if (req.file.size > MAX_FILE_SIZE) {
+            await fs.unlink(req.file.path);
+            return res.status(400).json({ 
+                error: `File size too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB` 
+            });
+        }
+
+        // Check file extension
+        const fileExtension = path.extname(req.file.originalname).toLowerCase();
+        if (!ALLOWED_VIDEO_EXTENSIONS.includes(fileExtension)) {
+            await fs.unlink(req.file.path);
+            return res.status(400).json({ 
+                error: `Invalid file extension. Allowed extensions: ${ALLOWED_VIDEO_EXTENSIONS.join(', ')}` 
+            });
+        }
+
+        // Check actual file type using file-type package (v16.5.3 syntax)
+        const fileBuffer = await fs.readFile(req.file.path);
+        const fileTypeResult = await FileType.fromBuffer(fileBuffer);
+
+        if (!fileTypeResult || !ALLOWED_VIDEO_MIMES.includes(fileTypeResult.mime)) {
+            await fs.unlink(req.file.path);
+            return res.status(400).json({ 
+                error: 'Invalid file type. File must be a valid video.' 
+            });
+        }
+
+        next();
+    } catch (error) {
+        console.error('Error in video validation:', error);
+        if (req.file) {
+            await fs.unlink(req.file.path).catch(console.error);
+        }
+        return res.status(500).json({ error: 'Error validating video file' });
+    }
+};
 
 const upload = multer({ storage: storage });
 
@@ -73,12 +158,15 @@ router.get('/upload/:roomIdentifier', authMiddleware.requireAuth, authMiddleware
     }
 });
 
-// This route requires authentication (either student or teacher)
-router.post('/upload', authMiddleware.requireAuth, upload.single('video'), async (req, res) => {
+router.post('/upload', 
+    authMiddleware.requireAuth, 
+    upload.single('video'),
+    validateVideoUpload,
+    async (req, res) => {
     try {
         const { title, roomId } = req.body;
         console.log('Uploading video for room:', roomId);
-
+        
         const room = await models.Room.findByPk(roomId);
         if (!room) {
             console.log('Room not found');
@@ -92,15 +180,15 @@ router.post('/upload', authMiddleware.requireAuth, upload.single('video'), async
 
         const filePath = req.file.path;
         const fileExtension = path.extname(req.file.originalname).toLowerCase();
-
+        
         const videoData = {
             title,
             filePath: path.basename(filePath),
             roomId: room.id,
+            // Consider any non-mp4 format as needing processing
             processingStatus: fileExtension === '.mp4' ? 'pending_transcription' : 'processing'
         };
 
-        // Set the appropriate user ID based on role
         if (req.user.role === 'student') {
             videoData.studentId = req.user.id;
         } else if (req.user.role === 'teacher') {
@@ -119,12 +207,14 @@ router.post('/upload', authMiddleware.requireAuth, upload.single('video'), async
                 console.error('Error adding job to video queue:', error);
             });
         } else {
-            // If it's already an MP4, queue it for transcription immediately
             await TranscriptionService.queueTranscription(video.id);
         }
 
         console.log('Video uploaded successfully:', video.id);
-        res.status(200).json({ message: 'Video uploaded successfully and is being processed', videoId: video.id });
+        res.status(200).json({ 
+            message: 'Video uploaded successfully and is being processed', 
+            videoId: video.id 
+        });
     } catch (error) {
         console.error('Error uploading video:', error);
         res.status(500).json({ error: 'An error occurred while uploading the video' });
@@ -134,32 +224,57 @@ router.post('/upload', authMiddleware.requireAuth, upload.single('video'), async
 // This route requires authentication
 router.get('/viewScore/:videoId', authMiddleware.requireAuth, async (req, res) => {
     try {
-        //const video = await models.Video.findByPk(req.params.videoId);
-		
-		const video = await models.Video.findOne({
+        const video = await models.Video.findOne({
             where: { id: req.params.videoId },
-			include: [
-				{ model: models.User, as: 'student', attributes: ['email'] },
-				{ model: models.User, as: 'teacher', attributes: ['email'] },
-				{ 
-					model: models.Room, 
-					as: 'room',
-					attributes: ['uniqueIdentifier']
-				}
-			]
+            include: [
+                { model: models.User, as: 'student', attributes: ['email'] },
+                { model: models.User, as: 'teacher', attributes: ['email'] },
+                { 
+                    model: models.Room, 
+                    as: 'room',
+                    attributes: ['uniqueIdentifier', 'teacherId']
+                }
+            ]
         });
-		
+        
         if (!video) {
-            return res.status(404).json({ error: 'Video not found' });
+            return res.status(404).render('error', { 
+                title: 'Error', 
+                message: 'Video not found' 
+            });
         }
-		res.render('view-score', { 
-				title: 'Video Score',
-				video: video
-		});
-	  } catch (error) {
+
+        // Check if user is either the student who owns the video or the teacher of the room
+        const isStudent = video.studentId === req.user.id;
+        const isTeacher = video.room.teacherId === req.user.id;
+
+        if (!isStudent && !isTeacher) {
+            return res.status(403).render('error', { 
+                title: 'Error', 
+                message: 'You do not have permission to view this video score' 
+            });
+        }
+
+        // Find the current room for the user (for the header)
+        const currentRoom = await models.Room.findOne({
+            where: {
+                teacherId: req.user?.id
+            },
+            order: [['createdAt', 'DESC']]
+        });
+        
+        res.render('view-score', { 
+            title: 'Video Score',
+            video: video,
+            room: currentRoom || null
+        });
+    } catch (error) {
         console.error('Error viewing video score:', error);
-        res.status(500).json({ error: 'An error occurred while viewing video score' });
-    }	
+        res.status(500).render('error', { 
+            title: 'Error', 
+            message: 'An error occurred while viewing video score' 
+        });
+    }   
 });
 
 // This route requires authentication
@@ -195,44 +310,71 @@ function getMimeType(filename) {
     return mimeTypes[ext] || 'video/mp4';
 }
 
-// This route requires authentication
-router.get('/stream/:name', authMiddleware.requireAuth, (req, res) => {
-    const videoName = req.params.name;
-    const videoPath = path.resolve(__dirname, '../uploads/', videoName);
-    const contentType = getMimeType(videoName);
+// Update the streaming route to use fsSync for createReadStream
+router.get('/stream/:name', authMiddleware.requireAuth, async (req, res) => {
+    try {
+        const videoName = req.params.name;
+        
+        // First, find the video record to check permissions
+        const video = await models.Video.findOne({
+            where: { filePath: videoName },
+            include: [{
+                model: models.Room,
+                as: 'room'
+            }]
+        });
 
-    fs.stat(videoPath, (err, stat) => {
-        if (err) {
-            console.error("File doesn't exist or there is an error: ", err);
+        if (!video) {
             return res.status(404).send('Video not found');
         }
 
-        const fileSize = stat.size;
-        const range = req.headers.range;
+        // Check if user is either the student who owns the video or the teacher of the room
+        const isStudent = video.studentId === req.user.id;
+        const isTeacher = video.room.teacherId === req.user.id;
 
-        if (range) {
-            const parts = range.replace(/bytes=/, "").split("-");
-            const start = parseInt(parts[0], 10);
-            const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-            const chunksize = (end - start) + 1;
-            const file = fs.createReadStream(videoPath, { start, end });
-            const head = {
-                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-                'Accept-Ranges': 'bytes',
-                'Content-Length': chunksize,
-                'Content-Type': contentType
-            };
-            res.writeHead(206, head);
-            file.pipe(res);
-        } else {
-            const head = {
-                'Content-Length': fileSize,
-                'Content-Type': contentType
-            };
-            res.writeHead(200, head);
-            fs.createReadStream(videoPath).pipe(res);
+        if (!isStudent && !isTeacher) {
+            return res.status(403).send('You do not have permission to view this video');
         }
-    });
+
+        const videoPath = path.resolve(__dirname, '../uploads/', videoName);
+        const contentType = getMimeType(videoName);
+
+        fsSync.stat(videoPath, (err, stat) => { // Using callback version for stat
+            if (err) {
+                console.error("File doesn't exist or there is an error: ", err);
+                return res.status(404).send('Video file not found');
+            }
+
+            const fileSize = stat.size;
+            const range = req.headers.range;
+
+            if (range) {
+                const parts = range.replace(/bytes=/, "").split("-");
+                const start = parseInt(parts[0], 10);
+                const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+                const chunksize = (end - start) + 1;
+                const file = fsSync.createReadStream(videoPath, { start, end });
+                const head = {
+                    'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                    'Accept-Ranges': 'bytes',
+                    'Content-Length': chunksize,
+                    'Content-Type': contentType
+                };
+                res.writeHead(206, head);
+                file.pipe(res);
+            } else {
+                const head = {
+                    'Content-Length': fileSize,
+                    'Content-Type': contentType
+                };
+                res.writeHead(200, head);
+                fsSync.createReadStream(videoPath).pipe(res);
+            }
+        });
+    } catch (error) {
+        console.error('Error streaming video:', error);
+        res.status(500).send('An error occurred while streaming the video');
+    }
 });
 
 // These routes require authentication and use the checkEditPermission function
@@ -316,9 +458,11 @@ router.post('/:videoId/retry-transcription', authMiddleware.requireTeacher, asyn
     }
 });
 
+const { addScoringJob } = require('../services/scoringQueue');
+
 router.post('/:videoId/score', authMiddleware.requireAuth, authMiddleware.requireTeacher, async (req, res) => {
   try {
-    const scoreData = await scoringService.scoreTranscription(req.params.videoId);
+    await addScoringJob(req.params.videoId);
     res.redirect(`/videos/room/${req.body.roomId}`);
   } catch (error) {
     console.error('Scoring error:', error);

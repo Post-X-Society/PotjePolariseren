@@ -274,6 +274,9 @@ button:focus {
                 <div class="alert alert-success" role="alert"><%= success %></div>
             <% } else { %>
 				<div id="error-messages" role="alert" aria-live="polite"></div>
+				<div class="text-row" style="display:block">
+					<p>Meedoen? Vraag jouw docent om een Potje ID.<br />Vul het hieronder in met jouw mailadres en ontvang een login link.</p>
+			</div>
                 <div class="text-row" id="row3">
                     <form action="/auth/student-login" method="POST" id="loginForm">
                         <div class="form-row">

@@ -31,7 +31,7 @@ router.get('/:roomId', authMiddleware.requireAuth, authMiddleware.requireTeacher
         }
 
         res.render('teacher-room', { 
-            title: `Room ${room.uniqueIdentifier}`,
+            title: `Potje Polariseren ${room.uniqueIdentifier}`,
             room,
             videos: room.videos
         });

@@ -11,6 +11,11 @@
                         <a class="nav-link" href="/">Home</a>
                     </li>
                     <% if (locals.user) { %>
+						<% if (room && room.uniqueIdentifier) { %>
+							<li class="nav-item">
+								<a class="nav-link" href="/rooms/<%= room.uniqueIdentifier %>">Huidig Potje</a>
+							</li>
+						<% } %>
                         <li class="nav-item">
                             <a class="nav-link" href="/auth/logout">Logout</a>
                         </li>
