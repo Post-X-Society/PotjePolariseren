@@ -4,8 +4,17 @@ class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
       host: 'smtp.strato.com',
-      port: 465,
-      secure: true, // use SSL
+      // Port 587 (STARTTLS), not 465 (implicit SSL): the host's outbound
+      // firewall blocks 465 and 25, so 465 connections time out and registration
+      // hangs into a 504. Only 587 (submission) is allowed outbound.
+      port: 587,
+      secure: false, // STARTTLS is negotiated on 587
+      requireTLS: true, // never fall back to plaintext
+      // Fail fast instead of hanging ~2 min (nodemailer default) if SMTP is
+      // unreachable, so a mail problem never turns into a gateway timeout again.
+      connectionTimeout: 15000,
+      greetingTimeout: 10000,
+      socketTimeout: 20000,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD
