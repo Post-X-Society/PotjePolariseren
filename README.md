@@ -10,7 +10,7 @@ De Potje Polariseren tool is onderdeel van een lespakket over polarisatie in MBO
 
 Meer informatie over het lespakket: [https://www.postxsociety.org/lespakket-polarisatie/]
 
-Handleiding voor gebruik van de tool: [https://docs.postxsociety.cloud/potjepolariseren/]
+Handleiding voor gebruik van de tool: [https://docs.postxsociety.cloud]
 
 ## Contact
 Voor vragen of suggesties, neem contact op met Post-X Society [mail@postxsociety.org](https://www.postxsociety.org/over-ons/contact/)
