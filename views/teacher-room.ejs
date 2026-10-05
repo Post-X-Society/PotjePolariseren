@@ -27,6 +27,11 @@
     margin-top: 0;
 }
 
+/* Breathing room at the very bottom of the page. */
+body {
+    padding-bottom: 3rem;
+}
+
 /* Page header styles */
 .page-header {
     background-color: var(--secondary-color);
@@ -208,7 +213,7 @@ div.dataTables_wrapper div.dataTables_paginate {
 }
 
 .comment-cell {
-    max-width: 150px;
+    max-width: 240px;
     word-wrap: break-word;
 }
 
@@ -216,6 +221,49 @@ div.dataTables_wrapper div.dataTables_paginate {
     max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* --- Main table polish --------------------------------------------------- */
+/* Vertically centre every cell so the small text lines up with the video
+   thumbnail instead of floating at the top. */
+.table td {
+    vertical-align: middle;
+}
+
+/* The date was wrapping in the middle of the value; keep it on one line. */
+.table td.date-cell {
+    white-space: nowrap;
+}
+
+/* The primary "Bekijk" action now lives in the first column, under the title. */
+.video-title {
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+.view-score-link {
+    display: inline-block;
+}
+
+/* Make it obvious that the title and comment can be edited inline. */
+.editable {
+    cursor: pointer;
+    border-bottom: 1px dashed var(--accent-color);
+    transition: background-color 0.15s ease;
+}
+.editable:hover {
+    background-color: #faeffc;
+}
+.editable::after {
+    content: "\270E"; /* pencil, survives inline-edit text replacement */
+    margin-left: 0.3em;
+    font-size: 0.85em;
+    color: var(--accent-color);
+    opacity: 0.75;
+}
+.comment-cell .editable {
+    display: inline-block;
+    white-space: normal;
+    word-break: break-word;
 }
 
 /* Status messages */
@@ -320,7 +368,7 @@ div.dataTables_wrapper div.dataTables_paginate {
     <%- include('partials/header') %>
     <div class="container mt-4">
         <div class="page-header">
-		<h1>Potje Polariseren: <span class="room-identifier"><%= room.uniqueIdentifier.slice(0, 4).toUpperCase() %>-<%= room.uniqueIdentifier.slice(4).toUpperCase() %></span></h1>
+		<h1>Potje Polariseren <span class="room-identifier"><%= room.uniqueIdentifier.slice(0, 4).toUpperCase() %>-<%= room.uniqueIdentifier.slice(4).toUpperCase() %></span></h1>
 		<p class="expiry-date">Verloopt op: <%= new Date(room.expiresAt).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam', day: '2-digit', month: '2-digit', year: '2-digit'}).replace(/\//g, '-') %></p>
 	</div>
 		
@@ -384,8 +432,11 @@ div.dataTables_wrapper div.dataTables_paginate {
             <tbody>
                 <% videos.forEach(video => { %>
                     <tr>
-                        <td>
-                            <span class="editable" data-type="title" data-id="<%= video.id %>"><%= video.title %></span>
+                        <td class="title-cell">
+                            <div class="video-title"><span class="editable" data-type="title" data-id="<%= video.id %>"><%= video.title %></span></div>
+                            <% if (video.scoringStatus === 'completed') { %>
+                                <a href="/videos/viewScore/<%= video.id %>" class="view-score-link"><button class="btn btn-info btn-sm view-video-score" aria-label="Bekijk score"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Bekijk</button></a>
+                            <% } %>
                         </td>
                         <td>
                             <% if (video.processingStatus === 'completed') { %>
@@ -410,8 +461,7 @@ div.dataTables_wrapper div.dataTables_paginate {
                                   const sum = Object.values(scoreData).reduce((acc, category) => acc + category.score, 0);
                                   const percentage = (sum / 30) * 100;
                                 %>
-								<p><span class="badge rounded-pill"><span class="display-4"><%= percentage.toFixed(0) %>%</span></span></p>
-                                <a href="/videos/viewScore/<%= video.id %>"><button class="btn btn-info btn-sm view-video-score" aria-label="Bekijk score"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Bekijk</button></a>
+								<p class="score-value"><span class="badge rounded-pill"><span class="display-4"><%= percentage.toFixed(0) %>%</span></span></p>
                             <% } else if (video.processingStatus === 'processing' || video.processingStatus === 'pending_transcription' || video.processingStatus === 'transcribing') { %>
                                 <div class="processing-message">Wacht op transcriptie...</div>
                             <% } else if (video.scoringStatus === 'processing' || video.scoringStatus === 'pending' || video.scoringStatus == '') { %>
@@ -422,10 +472,10 @@ div.dataTables_wrapper div.dataTables_paginate {
                         </td>
                         <td>
                         <% if (video.processingStatus === 'completed' && video.transcription) { %>
-                            <button class="btn btn-primary btn-sm view-transcript" 
+                            <button class="btn btn-primary btn-sm view-transcript"
                                     data-id="<%= video.id %>"
                                     data-transcription="<%= encodeURIComponent(video.transcription) %>" aria-label="Bekijk transcript">
-                                <i class="fa-solid fa-file" aria-hidden="true"></i> Bekijk
+                                <i class="fa-solid fa-file" aria-hidden="true"></i> Transcript
                             </button>
                         <% } else if (video.processingStatus === 'processing' || video.processingStatus === 'pending_transcription' || video.processingStatus === 'transcribing') { %>
                             <div class="processing-message">Transcriptie bezig...</div>
@@ -434,7 +484,7 @@ div.dataTables_wrapper div.dataTables_paginate {
                         <% } %>
                     </td>
                         <td class="comment-cell">
-                            <span class="editable truncate" data-type="comment" data-id="<%= video.id %>">
+                            <span class="editable" data-type="comment" data-id="<%= video.id %>">
                                 <%= video.comment ? video.comment.substring(0, 150) : 'Geen comment' %>
                             </span>
                         </td>
@@ -447,7 +497,7 @@ div.dataTables_wrapper div.dataTables_paginate {
                                 Unknown
                             <% } %>
                         </td>
-                        <td>
+                        <td class="date-cell">
                             <%= new Date(video.createdAt).toLocaleString('nl-NL', { timeZone: 'Europe/Amsterdam', day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-') %>
                         </td>
                         <td>
@@ -671,7 +721,7 @@ div.dataTables_wrapper div.dataTables_paginate {
                                     data-id="${videoId}"
                                     data-transcription="${encodeURIComponent(data.transcription)}"
                                     aria-label="Bekijk transcript">
-                                <i class="fa-solid fa-file" aria-hidden="true"></i> Bekijk
+                                <i class="fa-solid fa-file" aria-hidden="true"></i> Transcript
                             </button>
                         `);
                         bindTranscriptClickHandlers();
@@ -688,9 +738,14 @@ div.dataTables_wrapper div.dataTables_paginate {
                     const percentage = (sum / 30) * 100;
 
                     scoreCell.html(`
-                        <p><span class="badge rounded-pill"><span class="display-4">${percentage.toFixed(0)}%</span></span></p>
-                        <a href="/videos/viewScore/${videoId}"><button class="btn btn-info btn-sm view-video-score"><i class="fa-solid fa-magnifying-glass"></i> Bekijk</button></a>
+                        <p class="score-value"><span class="badge rounded-pill"><span class="display-4">${percentage.toFixed(0)}%</span></span></p>
                     `);
+
+                    // The "Bekijk" action lives in the first (title) column.
+                    const titleCell = row.find('td:eq(0)');
+                    if (!titleCell.find('.view-video-score').length) {
+                        titleCell.append(`<a href="/videos/viewScore/${videoId}" class="view-score-link"><button class="btn btn-info btn-sm view-video-score"><i class="fa-solid fa-magnifying-glass"></i> Bekijk</button></a>`);
+                    }
                 } else if (data.processingStatus === 'processing' || data.processingStatus === 'pending_transcription' || data.processingStatus === 'transcribing') {
                     scoreCell.html('<div class="processing-message">Wacht op transcriptie...</div>');
                 } else if (data.scoringStatus === 'processing' || data.scoringStatus === 'pending' || data.scoringStatus === '') {
