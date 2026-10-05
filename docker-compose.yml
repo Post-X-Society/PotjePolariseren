@@ -1,0 +1,94 @@
+version: '3.9'
+
+services:
+  db:
+    image: mariadb:11.4
+    container_name: polariseren-db
+    restart: unless-stopped
+    environment:
+      # run mariadb-upgrade automatically on the 10.11 -> 11.4 major bump
+      MARIADB_AUTO_UPGRADE: "1"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASS}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    networks:
+      - polariseren-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: polariseren-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data
+    networks:
+      - polariseren-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: polariseren-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # depends_on above only governs `docker compose up`. After a HOST REBOOT the
+    # daemon starts containers from restart policies in arbitrary order and
+    # ignores it, so wait for the dependencies at runtime too.
+    command: >
+      sh -c 'until nc -z db 3306; do echo "waiting for db..."; sleep 2; done;
+      until nc -z redis 6379; do echo "waiting for redis..."; sleep 2; done;
+      echo "dependencies ready"; exec node app.js'
+    healthcheck:
+      # without this the container reports "Up" even when it is serving nothing
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_HOST=db
+      - DB_PORT=3306
+      - JWT_SECRET=${JWT_SECRET}
+      - APP_URL=${APP_URL}
+      - REPLICATE_API_KEY=${REPLICATE_API_KEY}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - REDIS_URL=redis://redis:6379
+      - BASE_URL=${BASE_URL}
+      - NODE_ENV=production
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      - ./tmp:/app/tmp
+    networks:
+      - polariseren-network
+      - proxy
+    expose:
+      - "3000"
+
+networks:
+  polariseren-network:
+    driver: bridge
+  proxy:
+    external: true
