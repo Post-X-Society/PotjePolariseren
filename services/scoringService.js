@@ -1,6 +1,6 @@
 const Replicate = require('replicate');
 const AppError = require('../utils/appError');
-const { models } = require('../database'); 
+const { models } = require('../database');
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_KEY,
@@ -16,7 +16,7 @@ class ScoringService {
     // Find the video with proper includes using the models
     const video = await this.Video.findByPk(videoId, {
       include: [
-        { 
+        {
           model: models.Room,
           as: 'room'
         },
@@ -45,61 +45,80 @@ class ScoringService {
     const input = {
       top_k: 50,
       top_p: 0.9,
-      prompt: `Analyseer het volgende bericht op kenmerken van polarisatie:
-'${sanitizedInput}'
-Kenmerken:
-\t1. Sentiment: Gebruik van termen over sterke positieve of negatieve gevoelens.
-\t2. Stelligheid: woorden zoals "altijd", "nooit", "moet", "alle", etc.
-\t3. Emotioneel geladen: woorden die sterke emoties oproepen, zoals "afschuwelijk", "bizar".
-\t4. Verdeeldheid: sterke steun voor een standpunt, of sterke oppositie.
-\t5. Negatieve Stereotypes: negatieve eigenschappen toeschrijven aan een groep.
-\t6. Partijdigheid: Taalgebruik dat sterk aansluit bij een bepaalde politieke ideologie, partij of fractie.
+      prompt: `Analyseer het volgende bericht op kenmerken van polarisatie en geef je antwoord als een JSON object:
 
-\tBeoordeel het bericht op elke eigenschap en ken het een score toe op een schaal van 1 tot 5. Geef ook een korte uitleg in het Nederlands. De uitleg moet volledige zinnen bevatten en niet eindigen met "..." maar afgerond zijn.
-Antwoord uitsluitend in de vorm van een JSON-object met daarin de eigenschap, score en volledige uitleg. Bijvoorbeeld: 
-\t{
-\t\t"Sentiment": {"score": 3, "explanation": "Het bericht is gematigd sentimenteel door het gebruik van woorden zoals 'belachelijk' en 'liefde', die zowel sterke negatieve als positieve gevoelens uitdrukken."},
-\t\t...
-\t}`,
-      max_tokens: 1024,
+Bericht: '${sanitizedInput}'
+
+Analyseer op de volgende kenmerken:
+1. Sentiment: Gebruik van termen over sterke positieve of negatieve gevoelens.
+2. Stelligheid: woorden zoals "altijd", "nooit", "moet", "alle", etc.
+3. Emotioneel geladen: woorden die sterke emoties oproepen.
+4. Verdeeldheid: sterke steun voor een standpunt, of sterke oppositie.
+5. Negatieve Stereotypes: negatieve eigenschappen toeschrijven aan een groep.
+6. Partijdigheid: Taalgebruik dat aansluit bij een politieke ideologie.
+
+Geef je antwoord als een JSON object met voor elk kenmerk een score (1-5) en een korte uitleg in het Nederlands.
+
+Gebruik exact deze JSON structuur:
+{
+  "Sentiment": {"score": 1, "explanation": "Je uitleg hier."},
+  "Stelligheid": {"score": 1, "explanation": "Je uitleg hier."},
+  "Emotioneel geladen": {"score": 1, "explanation": "Je uitleg hier."},
+  "Verdeeldheid": {"score": 1, "explanation": "Je uitleg hier."},
+  "Negatieve Stereotypes": {"score": 1, "explanation": "Je uitleg hier."},
+  "Partijdigheid": {"score": 1, "explanation": "Je uitleg hier."}
+}`,
+      max_tokens: 2048,
       min_tokens: 0,
-      temperature: 0.6,
-      system_prompt: "Je bent een Nederlandstalige polarisatie detector. Antwoord alleen met een JSON object, zonder inleidende tekst of uitleg.",
-      length_penalty: 1,
+      temperature: 0.3,
+      system_prompt: "Je bent een Nederlandstalige polarisatie detector. Antwoord uitsluitend met een geldig JSON object. Gebruik alleen de opgegeven structuur.",
       stop_sequences: "<|end_of_text|>,<|eot_id|>",
       presence_penalty: 0,
       frequency_penalty: 0
     };
 
     try {
-      let eventsData = '';
-      for await (const event of replicate.stream("meta/meta-llama-3.1-405b-instruct", { input })) {
-        eventsData += event.toString();
-      }
+      // Use run() instead of stream() for better JSON mode support
+      const output = await replicate.run("meta/llama-4-maverick-instruct", { input });
+
+      // Output should be an array of strings, join them
+      const eventsData = Array.isArray(output) ? output.join('') : String(output);
 
       console.log('Raw scoring result:', eventsData);
 
-      const jsonMatch = eventsData.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new AppError('No valid JSON found in the response', 500);
-      }
-
-      const jsonString = jsonMatch[0];
-      console.log('Extracted JSON:', jsonString);
-
       let scoreData;
       try {
-        scoreData = JSON.parse(jsonString);
+        // With JSON mode, the entire response should be valid JSON
+        scoreData = JSON.parse(eventsData);
       } catch (parseError) {
         console.error('Parse error:', parseError);
-        throw new AppError(`Failed to parse scoring result: ${parseError.message}`, 500);
+        console.error('Failed to parse:', eventsData);
+
+        // Fallback: try to extract JSON object
+        const jsonMatch = eventsData.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            scoreData = JSON.parse(jsonMatch[0]);
+          } catch (e) {
+            throw new AppError(`Failed to parse scoring result: ${parseError.message}`, 500);
+          }
+        } else {
+          throw new AppError(`No valid JSON found in response: ${parseError.message}`, 500);
+        }
       }
 
       if (!scoreData || typeof scoreData !== 'object') {
         throw new AppError('Invalid scoring result format', 500);
       }
 
-      await video.update({ 
+      // Validate that we have the expected properties
+      const expectedProps = ['Sentiment', 'Stelligheid', 'Emotioneel geladen', 'Verdeeldheid', 'Negatieve Stereotypes', 'Partijdigheid'];
+      const missingProps = expectedProps.filter(prop => !scoreData[prop]);
+      if (missingProps.length > 0) {
+        console.warn('Missing properties in score data:', missingProps);
+      }
+
+      await video.update({
         scoreData: scoreData,
         scoringStatus: 'completed'
       });
@@ -118,7 +137,7 @@ Antwoord uitsluitend in de vorm van een JSON-object met daarin de eigenschap, sc
           console.error('Failed to send score notification email:', emailError);
         }
       }
-      
+
       console.log(`Scoring completed for video ${videoId}`);
       return scoreData;
     } catch (error) {
@@ -132,5 +151,4 @@ Antwoord uitsluitend in de vorm van een JSON-object met daarin de eigenschap, sc
   }
 }
 
-// Update the module exports
 module.exports = ScoringService;
