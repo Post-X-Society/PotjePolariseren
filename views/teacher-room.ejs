@@ -21,6 +21,12 @@
     margin-top: 1.5rem;
 }
 
+/* The navbar has its own .container; it must not inherit the page margin-top
+   (that left excess whitespace above the logo/menu). */
+.navbar .container {
+    margin-top: 0;
+}
+
 /* Page header styles */
 .page-header {
     background-color: var(--secondary-color);
@@ -40,8 +46,15 @@
 
 .room-identifier {
     font-family: monospace;
-    font-size: 1.2em;
+    font-size: 0.8em;
     letter-spacing: 1px;
+    display: inline-block;
+    vertical-align: middle;
+    background-color: #f4f4f6;
+    border: 1px solid var(--border-color);
+    border-radius: 0.35rem;
+    padding: 0.1em 0.5em;
+    line-height: 1.3;
 }
 
 /* Card styles */
@@ -114,6 +127,34 @@ div.dataTables_wrapper div.dataTables_paginate {
     margin-bottom: 0.5rem;
 }
 
+/* The length/filter controls are wrapped in a <label> whose default
+   margin-bottom added extra space at the bottom of the box. Remove it and
+   centre the controls vertically so top/bottom padding reads evenly. */
+div.dataTables_wrapper label {
+    margin-bottom: 0;
+}
+div.dataTables_wrapper div.dataTables_length,
+div.dataTables_wrapper div.dataTables_filter {
+    display: flex;
+    align-items: center;
+}
+div.dataTables_wrapper div.dataTables_filter {
+    justify-content: flex-end;
+}
+
+/* Make the footer "X tot Y van Z" box and the pagination box the same height
+   and vertically centred (the oversized paginate buttons made them differ). */
+div.dataTables_wrapper div.dataTables_info,
+div.dataTables_wrapper div.dataTables_paginate {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    margin-bottom: 0;
+}
+div.dataTables_wrapper div.dataTables_paginate {
+    justify-content: flex-end;
+}
+
 .dataTables_wrapper .dataTables_length select {
     border: 1px solid #aaa;
     border-radius: 3px;
@@ -130,9 +171,20 @@ div.dataTables_wrapper div.dataTables_paginate {
     margin-left: 3px;
 }
 
+/* The pagination is a Bootstrap ul.pagination > li.paginate_button > a.page-link.
+   Padding belongs on the inner anchor, not the li, otherwise it stacks and
+   inflates the box. Zero the ul margins and keep the anchors compact so this
+   box matches the info box height. */
+.dataTables_wrapper .dataTables_paginate ul.pagination {
+    margin: 0;
+}
 .dataTables_wrapper .dataTables_paginate .paginate_button {
-    padding: 0.5rem;
-    margin: 0 0.25rem;
+    padding: 0;
+    margin: 0 0.2rem;
+}
+.dataTables_wrapper .dataTables_paginate .page-link {
+    padding: 0.15rem 0.6rem;
+    line-height: 1.2;
     border-radius: 0.25rem;
 }
 
